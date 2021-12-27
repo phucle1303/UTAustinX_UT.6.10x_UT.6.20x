@@ -1,13 +1,10 @@
 *.bak
 *.uvproj
-*.uvopt
 *.uvgui.Phuc
-*.htm
 *.axf
 *.lnp
 *.map
 *.dep
 *.crf
 *.d
-*.o
 *.lst
