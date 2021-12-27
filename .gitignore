@@ -1,10 +1,8 @@
 *.bak
-*.uvproj
-*.uvgui.Phuc
+*.Phuc
 *.axf
 *.lnp
 *.map
 *.dep
-*.crf
 *.d
 *.lst
