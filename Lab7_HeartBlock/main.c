@@ -57,14 +57,23 @@ int main(void){
   EnableInterrupts();                      // enable interrupts for the grader  
   while(1){          // Follows the nine steps list above
     // a) Ready signal goes high
+		SetReady();
     // b) wait for switch to be pressed
+		WaitForASLow();
     // c) Ready signal goes low
+		ClearReady();
     // d) wait 10ms
+		Delay1ms(10);
     // e) wait for switch to be released
+		WaitForASHigh();
     // f) wait 250ms
+		Delay1ms(250);
     // g) VT signal goes high
+		SetVT();
     // h) wait 250ms
+		Delay1ms(250);
     // i) VT signal goes low
+		ClearVT();
   }
 }
 // Subroutine to initialize port F pins for input and output
@@ -100,6 +109,7 @@ void PortF_Init(void){ volatile unsigned long delay;
 // Outputs: None
 void WaitForASLow(void){
 // write this function
+	while (GPIO_PORTF_DATA_R&0x10);
 }
 
 // Subroutine reads AS input and waits for signal to be high
@@ -109,6 +119,7 @@ void WaitForASLow(void){
 // Outputs: None
 void WaitForASHigh(void){
 // write this function
+	while (!(GPIO_PORTF_DATA_R&0x10));
 }
 
 // Subroutine sets VT high
@@ -117,6 +128,7 @@ void WaitForASHigh(void){
 // Notes:   friendly means it does not affect other bits in the port
 void SetVT(void){
 // write this function
+	GPIO_PORTF_DATA_R |= 0x02;
 }
 
 // Subroutine clears VT low
@@ -125,6 +137,7 @@ void SetVT(void){
 // Notes:   friendly means it does not affect other bits in the port
 void ClearVT(void){
 // write this function
+	GPIO_PORTF_DATA_R &= ~0x02;
 }
 
 // Subroutine sets Ready high
@@ -133,6 +146,7 @@ void ClearVT(void){
 // Notes:   friendly means it does not affect other bits in the port
 void SetReady(void){
 // write this function
+	GPIO_PORTF_DATA_R |= 0x08;
 }
 
 
@@ -142,6 +156,7 @@ void SetReady(void){
 // Notes:   friendly means it does not affect other bits in the port
 void ClearReady(void){
 // write this function
+	GPIO_PORTF_DATA_R &= ~0x08;
 }
 
 // Subroutine to delay in units of milliseconds
@@ -150,6 +165,15 @@ void ClearReady(void){
 // Notes:   assumes 80 MHz clock
 void Delay1ms(unsigned long msec){
 // write this function
-
+	unsigned long i;
+  while(msec > 0)
+	{
+    i = 13333;  // this number means 1ms
+    while(i > 0)
+		{
+      i = i - 1;
+    }
+    msec = msec - 1; // decrements every 1 ms
+  }
 }
 
