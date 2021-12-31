@@ -65,7 +65,7 @@ void SysTick_Init(void){
 }
 unsigned long Led;
 void Delay(void){unsigned long volatile time;
-  time = 160000; // 0.1sec
+  time = 80000;//0.05s //160000; // 0.1sec
   while(time){
    time--;
   }
@@ -82,16 +82,25 @@ int main(void){  unsigned long i,last,now;
   last = NVIC_ST_CURRENT_R;
   EnableInterrupts();           // enable interrupts for the grader
   while(1){
-    Led = GPIO_PORTF_DATA_R;   // read previous
-    Led = Led^0x02;            // toggle red LED
-    GPIO_PORTF_DATA_R = Led;   // output 
-    if(i<50){
-      now = NVIC_ST_CURRENT_R;
-      Time[i] = (last-now)&0x00FFFFFF;  // 24-bit time difference
-      Data[i] = GPIO_PORTF_DATA_R&0x02; // record PF1
-      last = now;
-      i++;
-    }
+		if ((!(GPIO_PORTF_DATA_R&0x01))||(!(GPIO_PORTF_DATA_R&0x10)))
+		{
+			Led = GPIO_PORTF_DATA_R;   // read previous
+			Led = Led^0x02;            // toggle red LED
+			GPIO_PORTF_DATA_R = Led;   // output
+			if(i<50){
+				now = NVIC_ST_CURRENT_R;
+				Time[i] = (last-now)&0x00FFFFFF;  // 24-bit time difference
+				Data[i] = GPIO_PORTF_DATA_R&0x13; // record PF4, PF1 and PF0
+				last = now;
+				i++;
+			}			
+		}
+		else
+		{
+			Led = GPIO_PORTF_DATA_R;   // read previous
+			Led = Led&(~0x02);         // turn off red LED
+			GPIO_PORTF_DATA_R = Led;   // output 
+		}
     Delay();
   }
 }
