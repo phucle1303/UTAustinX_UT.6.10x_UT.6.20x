@@ -8,7 +8,6 @@
 /* This example accompanies the book
    "Embedded Systems: Introduction to ARM Cortex M Microcontrollers",
    ISBN: 978-1469998749, Jonathan Valvano, copyright (c) 2014
-
  Copyright 2015 by Jonathan W. Valvano, valvano@mail.utexas.edu
     You may use, edit, run or distribute this file
     as long as the above copyright notice remains
@@ -123,7 +122,12 @@ char character;
 // Output: none
 void UART_OutString(unsigned char buffer[]){
 // as part of Lab 11 implement this function
-
+  int i = 0;
+  while (buffer[i] != 0)
+  {
+      UART_OutChar(buffer[i]);
+      i++;
+  }
 }
 
 unsigned char String[10];
@@ -140,7 +144,56 @@ unsigned char String[10];
 //10000 to "**** "  any value larger than 9999 converted to "**** "
 void UART_ConvertUDec(unsigned long n){
 // as part of Lab 11 implement this function
-  
+  if (n>9999)
+  {
+	  int i;
+    for (i=0; i<4; i++)
+    {
+        String[i] = '*';
+    }
+  }
+  else if (n<10)
+	{
+		int i;
+		for (i=0; i<3; i++)
+    {
+        String[i] = ' ';
+    }
+    String[3] = n + 0x30;
+	}
+	else if ((n>9) && (n<100))
+  {
+		int i;
+		for (i=0; i<2; i++)
+    {
+        String[i] = ' ';
+    }
+		String[2] = n/10 + 0x30;
+    n %= 10;
+    String[3] = n + 0x30;
+  }
+	else if ((n>99) && (n<1000))
+	{
+		String[0] = ' ';
+    String[1] = n/100 + 0x30;
+    n %= 100;
+    String[2] = n/10 + 0x30;
+    n %= 10;
+    String[3] = n + 0x30;
+	}
+	else if ((n>999) && (n<10000))
+	{
+		String[0] = n/1000 + 0x30;
+    n %= 1000;
+    String[1] = n/100 + 0x30;
+    n %= 100;
+    String[2] = n/10 + 0x30;
+    n %= 10;
+    String[3] = n + 0x30;
+	}
+	
+  String[4] = ' ';
+	String[5] = 0;
 }
 
 //-----------------------UART_OutUDec-----------------------
@@ -166,7 +219,29 @@ void UART_OutUDec(unsigned long n){
 //10000 to "*.*** cm"  any value larger than 9999 converted to "*.*** cm"
 void UART_ConvertDistance(unsigned long n){
 // as part of Lab 11 implement this function
-  
+  if (n>9999)
+  {
+			int i;
+      String[0] = '*';
+      for (i=2; i<5; i++)
+      {
+          String[i] = '*';
+      }
+  }
+  else
+  {
+      String[0] = n/1000 + 0x30;
+      n %= 1000;
+      String[2] = n/100 + 0x30;
+      n %= 100;
+      String[3] = n/10 + 0x30;
+      n %= 10;
+      String[4] = n + 0x30;
+  }
+  String[1] = '.';
+  String[5] = ' ';
+  String[6] = 'c';
+  String[7] = 'm';
 }
 
 //-----------------------UART_OutDistance-----------------------
