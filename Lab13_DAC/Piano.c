@@ -15,8 +15,17 @@
 // Initialize piano key inputs
 // Input: none
 // Output: none
-void Piano_Init(void){ 
-  
+void Piano_Init(void)
+{ 
+  unsigned long volatile delay;
+  SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOE; // activate port E
+  delay = SYSCTL_RCGC2_R;    // allow time to finish activating
+  GPIO_PORTE_AMSEL_R &= ~0x0F;      // no analog
+  GPIO_PORTE_PCTL_R &= ~0x0000FFFF; // regular GPIO function
+  GPIO_PORTE_DIR_R &= ~0x0F;      // make PE3-0 in
+  GPIO_PORTE_AFSEL_R &= ~0x0F;   // disable alt funct on PE3-0
+  GPIO_PORTE_DEN_R |= 0x0F;      // enable digital I/O on PE3-0
+	GPIO_PORTE_PDR_R |= 0x0F;      // enable pull-down on PE3-0
 }
 // **************Piano_In*********************
 // Input from piano key inputs
@@ -25,6 +34,26 @@ void Piano_Init(void){
 // 0x01 is key 0 pressed, 0x02 is key 1 pressed,
 // 0x04 is key 2 pressed, 0x08 is key 3 pressed
 unsigned long Piano_In(void){
-  
-  return 0; // remove this, replace with input
+	unsigned long retVal;
+  if (GPIO_PORTE_DATA_R&0x01)
+	{
+		retVal = 0;
+	}
+	else if (GPIO_PORTE_DATA_R&0x02)
+	{
+		retVal = 1;
+	}
+	else if (GPIO_PORTE_DATA_R&0x04)
+	{
+		retVal = 2;
+	}
+	else if (GPIO_PORTE_DATA_R&0x08)
+	{
+		retVal = 3;
+	}
+	else
+	{
+		retVal = 4;
+	}
+  return retVal; // remove this, replace with input
 }

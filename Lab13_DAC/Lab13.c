@@ -26,7 +26,25 @@ int main(void){ // Real Lab13
   EnableInterrupts();  // enable after all initialization are done
   while(1){                
 // input from keys to select tone
-
+		switch (Piano_In())
+		{
+			case 0:
+				Sound_Tone(4777); // C note //1/(32*523.251)/12.5/10^-9 (32 is number of samples)
+				break;
+			case 1:
+				Sound_Tone(4256); // D note //1/(32*587.330)/12.5/10^-9 (32 is number of samples)
+				break;
+			case 2:
+				Sound_Tone(3792); // E note //1/(32*659.255)/12.5/10^-9 (32 is number of samples)
+				break;
+			case 3:
+				Sound_Tone(3188); // G note //1/(32*783.991)/12.5/10^-9 (32 is number of samples)
+				break;
+			default:
+				Sound_Off(); // no button pressed
+				break;
+		}
+		delay(10);
   }
             
 }
