@@ -54,7 +54,21 @@ unsigned long Convert(unsigned long sample){
 }
 
 // Initialize SysTick interrupts to trigger at 40 Hz, 25 ms
-void SysTick_Init(unsigned long period){
+void SysTick_Init(unsigned long period)
+{
+	unsigned long volatile delay;
+  SYSCTL_RCGC2_R |= 0x00100000; // activate port F
+  delay = SYSCTL_RCGC2_R;
+  GPIO_PORTF_AMSEL_R &= ~0x02;      // no analog on PF1
+  GPIO_PORTF_PCTL_R &= ~0x000000F0; // regular function
+  GPIO_PORTF_DIR_R |= 0x02;     // make PF1 out
+  GPIO_PORTF_AFSEL_R &= ~0x02;  // disable alt funct on PF1
+  GPIO_PORTA_DEN_R |= 0x02;     // enable digital I/O on PF1
+  NVIC_ST_CTRL_R = 0;           // disable SysTick during setup
+  NVIC_ST_RELOAD_R = period-1;  // reload value for 25ms (assuming 40MHz)
+  NVIC_ST_CURRENT_R = 0;        // any write to current clears it
+  NVIC_SYS_PRI3_R = NVIC_SYS_PRI3_R&0x00FFFFFF; // priority 0               
+  NVIC_ST_CTRL_R = 0x00000007;  // enable with core clock and interrupts
 
 }
 // executes every 25 ms, collects a sample, converts and stores in mailbox
@@ -75,7 +89,29 @@ void SysTick_Handler(void){
 //10000 to "*.*** cm"  any value larger than 9999 converted to "*.*** cm"
 void UART_ConvertDistance(unsigned long n){
 // as part of Lab 11 you implemented this function
-
+	if (n>9999)
+  {
+			int i;
+      String[0] = '*';
+      for (i=2; i<5; i++)
+      {
+          String[i] = '*';
+      }
+  }
+  else
+  {
+      String[0] = n/1000 + 0x30;
+      n %= 1000;
+      String[2] = n/100 + 0x30;
+      n %= 100;
+      String[3] = n/10 + 0x30;
+      n %= 10;
+      String[4] = n + 0x30;
+  }
+  String[1] = '.';
+  String[5] = ' ';
+  String[6] = 'c';
+  String[7] = 'm';
 }
 
 // main1 is a simple main program allowing you to debug the ADC interface
@@ -107,6 +143,7 @@ int main(void){
   volatile unsigned long delay;
   TExaS_Init(ADC0_AIN1_PIN_PE2, SSI0_Real_Nokia5110_Scope);
 // initialize ADC0, channel 1, sequencer 3
+	ADC0_Init();
 // initialize Nokia5110 LCD (optional)
 // initialize SysTick for 40 Hz interrupts
 // initialize profiling on PF1 (optional)
