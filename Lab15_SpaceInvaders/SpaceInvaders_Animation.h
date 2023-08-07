@@ -1,45 +1,3 @@
-// sprite.c
-// Runs on LM4F120/TM4C123
-// Jonathan Valvano
-// September 26, 2013
-// Example code from edX chapter 15
-
-// http://www.spaceinvaders.de/
-// sounds at http://www.classicgaming.cc/classics/spaceinvaders/sounds.php
-// http://www.classicgaming.cc/classics/spaceinvaders/playguide.php
-/* This example accompanies the books
-   "Embedded Systems: Real Time Interfacing to Arm Cortex M Microcontrollers",
-   ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2013
-
-   "Embedded Systems: Introduction to Arm Cortex M Microcontrollers",
-   ISBN: 978-1469998749, Jonathan Valvano, copyright (c) 2013
-
- Copyright 2013 by Jonathan W. Valvano, valvano@mail.utexas.edu
-    You may use, edit, run or distribute this file
-    as long as the above copyright notice remains
- THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
- OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
- MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
- VALVANO SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL,
- OR CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
- For more information about my classes, my research, and my books, see
- http://users.ece.utexas.edu/~valvano/
- */
- 
- // ******* Required Hardware I/O connections*******************
-// Slide pot pin 1 connected to ground
-// Slide pot pin 2 connected to PE2/AIN1
-// Slide pot pin 3 connected to pne side of the 1k resistor
-// other side of the 1k resistor is connected to +3.3V 
-// fire button connected to PE0
-// special weapon fire button connected to PE1
-// 8*R resistor DAC bit 0 on PB0 (least significant bit)
-// 4*R resistor DAC bit 1 on PB1
-// 2*R resistor DAC bit 2 on PB2
-// 1*R resistor DAC bit 3 on PB3 (most significant bit)
-// LED on PB4
-// LED on PB5
-
 // Blue Nokia 5110
 // ---------------
 // Signal        (Nokia 5110) LaunchPad pin
@@ -69,6 +27,15 @@
 
 #define NUM_SPRITE 5
 
+#define BUNKER_DEAD 0
+#define BUNKER_HEAVY_DAMAGED 1
+#define BUNKER_MODERATE_DAMAGED 2
+#define BUNKER_UNDAMAGED 3
+
+extern bunker_t playerBunker;
+extern playerShip_t playerShip;
+extern STyp Enemy[NUM_SPRITE];
+
 void SpaceInvaders_Sprite_Init(void);
 void SpaceInvaders_Sprite_Move(void);
 void SpaceInvaders_Sprite_Draw(void);
@@ -79,6 +46,6 @@ void SpaceInvaders_PlayerShip_Draw(void);
 
 void SpaceInvaders_Bunker_Init(void);
 void SpaceInvaders_Bunker_Defense(void);
-void SpaceInvaders_Bunker_Draw(void);
+void SpaceInvaders_Bunker_Draw(unsigned char bunkerLife);
 
 #endif /* _SPACEINVADERS_SPRITE_H_ */

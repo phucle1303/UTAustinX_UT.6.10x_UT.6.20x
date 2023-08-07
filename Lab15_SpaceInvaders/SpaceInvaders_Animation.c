@@ -1,45 +1,3 @@
-// sprite.c
-// Runs on LM4F120/TM4C123
-// Jonathan Valvano
-// September 26, 2013
-// Example code from edX chapter 15
-
-// http://www.spaceinvaders.de/
-// sounds at http://www.classicgaming.cc/classics/spaceinvaders/sounds.php
-// http://www.classicgaming.cc/classics/spaceinvaders/playguide.php
-/* This example accompanies the books
-   "Embedded Systems: Real Time Interfacing to Arm Cortex M Microcontrollers",
-   ISBN: 978-1463590154, Jonathan Valvano, copyright (c) 2013
-
-   "Embedded Systems: Introduction to Arm Cortex M Microcontrollers",
-   ISBN: 978-1469998749, Jonathan Valvano, copyright (c) 2013
-
- Copyright 2013 by Jonathan W. Valvano, valvano@mail.utexas.edu
-    You may use, edit, run or distribute this file
-    as long as the above copyright notice remains
- THIS SOFTWARE IS PROVIDED "AS IS".  NO WARRANTIES, WHETHER EXPRESS, IMPLIED
- OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
- MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE.
- VALVANO SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL,
- OR CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
- For more information about my classes, my research, and my books, see
- http://users.ece.utexas.edu/~valvano/
- */
- 
- // ******* Required Hardware I/O connections*******************
-// Slide pot pin 1 connected to ground
-// Slide pot pin 2 connected to PE2/AIN1
-// Slide pot pin 3 connected to pne side of the 1k resistor
-// other side of the 1k resistor is connected to +3.3V 
-// fire button connected to PE0
-// special weapon fire button connected to PE1
-// 8*R resistor DAC bit 0 on PB0 (least significant bit)
-// 4*R resistor DAC bit 1 on PB1
-// 2*R resistor DAC bit 2 on PB2
-// 1*R resistor DAC bit 3 on PB3 (most significant bit)
-// LED on PB4
-// LED on PB5
-
 // Blue Nokia 5110
 // ---------------
 // Signal        (Nokia 5110) LaunchPad pin
@@ -449,8 +407,8 @@ typedef struct
 {
     unsigned long x;      // x coordinate
     unsigned long y;      // y coordinate
-    const unsigned char *image; // ptr->image
-    unsigned char life;            // 0=dead, 1=half-life, 2=full-life
+    const unsigned char *image[4]; // ptr->image
+    unsigned char life;            // 0=dead, 1=heavy damaged, 2=moderate damaged, 3=undamaged
 } bunker_t;          
 bunker_t playerBunker;
 
@@ -458,16 +416,36 @@ void SpaceInvaders_Bunker_Init(void)
 {
     playerBunker.x = 33;
     playerBunker.y = 47 - (unsigned char)PlayerShip0[22];
-    playerBunker.image = Bunker0;
-    playerBunker.life = 2;
+    playerBunker.image[0] = Bunker0; // undamged
+    playerBunker.image[1] = Bunker1; // moderate damaged
+    playerBunker.image[2] = Bunker2; // heavy damaged
+    playerBunker.image[3] = Bunker3; // dead
+    playerBunker.life = 3;
 }
 
-void SpaceInvaders_Bunker_Draw(void)
+void SpaceInvaders_Bunker_Draw(unsigned char bunkerLife)
 {
     Nokia5110_ClearBuffer();
-    if (playerBunker.life > 0)
+    switch (bunkerLife)
     {
-        Nokia5110_PrintBMP(playerBunker.x, playerBunker.y, playerBunker.image, 0);
+    case BUNKER_DEAD:
+        Nokia5110_PrintBMP(playerBunker.x, playerBunker.y, playerBunker.image[3], 0); //dead
+        break;
+    
+    case BUNKER_HEAVY_DAMAGED:
+        Nokia5110_PrintBMP(playerBunker.x, playerBunker.y, playerBunker.image[2], 0); //heavy damaged
+        break;
+    
+    case BUNKER_MODERATE_DAMAGED:
+        Nokia5110_PrintBMP(playerBunker.x, playerBunker.y, playerBunker.image[1], 0); //moderate damaged
+        break;
+
+    case BUNKER_UNDAMAGED:
+        Nokia5110_PrintBMP(playerBunker.x, playerBunker.y, playerBunker.image[0], 0); //undamaged
+        break;
+
+    default:
+        break;
     }
     Nokia5110_DisplayBuffer();
 }

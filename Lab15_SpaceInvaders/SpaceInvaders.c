@@ -85,7 +85,7 @@ void EnableInterrupts(void);  // Enable interrupts
 void Delay100ms(unsigned long count); // time delay in 0.1 seconds
 unsigned long Convert(unsigned long sample);
 
-unsigned long ADCValue_Init;   
+unsigned long ADCValue_Measure;   
 unsigned long ADCValue;     
 unsigned char ADCFlag = 0;  
 
@@ -147,22 +147,31 @@ int main(void)
     SpaceInvaders_Sound_Init();
     SpaceInvaders_Sprite_Init();
     SpaceInvaders_PlayerShip_Init();
-    SpaceInvaders_PlayerShip_Move(ADC0_In());
     SpaceInvaders_Bunker_Init();
+
+    ADCValue_Measure = ADC0_In();
+    ADCValue = ADCValue_Measure;
+    SpaceInvaders_PlayerShip_Move(ADCValue);
 
     EnableInterrupts();
     while (1)
     {
         if (gameStart == 1)
         {
-            SpaceInvaders_Sprite_Draw();
-            SpaceInvaders_PlayerShip_Draw();
-            SpaceInvaders_Bunker_Draw();
+            ADCValue_Measure = ADC0_In();
             if (Semaphore == 1)
             {
                 /* Moves sprites */
                 SpaceInvaders_Sprite_Move();
                 SpaceInvaders_Sprite_Draw();
+                /* Move player ship */
+                if (ADCFlag == 1)
+                {
+                    SpaceInvaders_PlayerShip_Move(ADCValue);
+                    SpaceInvaders_PlayerShip_Draw();
+                    ADCFlag = 0;
+                }
+                SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
                 Semaphore = 0;
             }
         }
@@ -182,8 +191,11 @@ void SysTick_Handler(void)
     else if (gameStart == 1)
     {
         /* ADC Slidepot */
-        SpaceInvaders_PlayerShip_Move(ADC0_In());
-        SpaceInvaders_PlayerShip_Draw();
+        if (ADCValue_Measure != ADCValue)
+        {
+            ADCValue = ADCValue_Measure;
+            ADCFlag = 1;
+        }
 
         /* check if fire button is pressed */
         if (SpaceInvaders_GetSwitchState_PE0() == SWITCH_PRESSED)
