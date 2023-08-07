@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "dac.h": "c",
+        "texas.h": "c",
+        "spaceinvaders_switches.h": "c",
+        "spaceinvaders_systick.h": "c",
+        "spaceinvaders_timer2a.h": "c",
+        "random.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "enabled"
+}
