@@ -85,12 +85,19 @@ void EnableInterrupts(void);  // Enable interrupts
 void Delay100ms(unsigned long count); // time delay in 0.1 seconds
 unsigned long Convert(unsigned long sample);
 
-unsigned long ADCValue_Measure;   
-unsigned long ADCValue;     
-unsigned char ADCFlag = 0;  
+static unsigned long ADCValue_Measure;   
+static unsigned long ADCValue;     
+static unsigned char ADCFlag = 0;  
 
-unsigned char gameStart = 0;
-unsigned char Semaphore = 0;
+typedef enum
+{
+    SPACEINVADERS_WELCOME,
+    SPACEINVADERS_START,
+    SPACEINVADERS_INGAME,
+    SPACEINVADERS_GAMEOVER
+}gameState_t;
+static gameState_t gameState = SPACEINVADERS_WELCOME;
+static unsigned char Semaphore = 0;
 
 // *************************** Capture image dimensions out of BMP**********
 // #define BUNKERW ((unsigned char)Bunker0[18])
@@ -118,15 +125,15 @@ int main(void)
     Nokia5110_ClearBuffer();
     Nokia5110_DisplayBuffer(); // draw buffer
 
-    Nokia5110_Clear();
-    Nokia5110_SetCursor(0, 0);
-    Nokia5110_OutString("HELLO PLAYER");
-    Nokia5110_SetCursor(2, 1);
-    Nokia5110_OutString("Welcome!");
-    Nokia5110_SetCursor(1, 3);
-    Nokia5110_OutString("Press Fire");
-    Nokia5110_SetCursor(2, 4);
-    Nokia5110_OutString("to play!");
+    // Nokia5110_Clear();
+    // Nokia5110_SetCursor(0, 0);
+    // Nokia5110_OutString("HELLO PLAYER");
+    // Nokia5110_SetCursor(2, 1);
+    // Nokia5110_OutString("Welcome!");
+    // Nokia5110_SetCursor(1, 3);
+    // Nokia5110_OutString("Press Fire");
+    // Nokia5110_SetCursor(2, 4);
+    // Nokia5110_OutString("to play!");
 
     // Nokia5110_PrintBMP(32, 47, PlayerShip0, 0); // player ship middle bottom
     // Nokia5110_PrintBMP(33, 47 - PLAYERH, Bunker0, 0);
@@ -149,32 +156,69 @@ int main(void)
     SpaceInvaders_PlayerShip_Init();
     SpaceInvaders_Bunker_Init();
 
-    ADCValue_Measure = ADC0_In();
-    ADCValue = ADCValue_Measure;
-    SpaceInvaders_PlayerShip_Move(ADCValue);
-
     EnableInterrupts();
     while (1)
     {
-        if (gameStart == 1)
+        switch (gameState)
         {
+        case SPACEINVADERS_WELCOME:
+            Nokia5110_Clear();
+            Nokia5110_SetCursor(0, 0);
+            Nokia5110_OutString("HELLO PLAYER");
+            Nokia5110_SetCursor(2, 1);
+            Nokia5110_OutString("Welcome!");
+            Nokia5110_SetCursor(1, 3);
+            Nokia5110_OutString("Press Fire");
+            Nokia5110_SetCursor(2, 4);
+            Nokia5110_OutString("to play!");
+            break;
+        
+        case SPACEINVADERS_START:
             ADCValue_Measure = ADC0_In();
-            if (Semaphore == 1)
+            ADCValue = ADCValue_Measure;
+            SpaceInvaders_PlayerShip_Move(ADCValue);
+            SpaceInvaders_PlayerShip_Draw();
+            SpaceInvaders_Sprite_Move();
+            SpaceInvaders_Sprite_Draw();
+            SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
+            gameState = SPACEINVADERS_INGAME;
+            break;
+
+        case SPACEINVADERS_INGAME:
+            SpaceInvaders_Sprite_Move();
+            SpaceInvaders_Sprite_Draw();
+            SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
+            /* Move player ship */
+            if (ADCFlag == 1)
             {
-                /* Moves sprites */
-                SpaceInvaders_Sprite_Move();
-                SpaceInvaders_Sprite_Draw();
-                /* Move player ship */
-                if (ADCFlag == 1)
-                {
-                    SpaceInvaders_PlayerShip_Move(ADCValue);
-                    SpaceInvaders_PlayerShip_Draw();
-                    ADCFlag = 0;
-                }
-                SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
-                Semaphore = 0;
+                SpaceInvaders_PlayerShip_Move(ADCValue);
+                SpaceInvaders_PlayerShip_Draw();
+                ADCFlag = 0;
             }
+            break;
+
+        default:
+            break;
         }
+
+        // if (gameState == 1)
+        // {
+        //     ADCValue_Measure = ADC0_In();
+        //     if (Semaphore == 1)
+        //     {
+        //         SpaceInvaders_Sprite_Move();
+        //         SpaceInvaders_Sprite_Draw();
+        //         /* Move player ship */
+        //         if (ADCFlag == 1)
+        //         {
+        //             SpaceInvaders_PlayerShip_Move(ADCValue);
+        //             SpaceInvaders_PlayerShip_Draw();
+        //             ADCFlag = 0;
+        //         }
+        //         SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
+        //         Semaphore = 0;
+        //     }
+        // }
         
     }
 }
@@ -182,13 +226,13 @@ int main(void)
 
 void SysTick_Handler(void)
 {
-    if ((gameStart == 0) && (SpaceInvaders_GetSwitchState_PE0() == SWITCH_PRESSED))
+    if ((gameState == SPACEINVADERS_WELCOME) && (SpaceInvaders_GetSwitchState_PE0() == SWITCH_PRESSED))
     {
-        gameStart = 1;
+        gameState = SPACEINVADERS_START;
         Nokia5110_ClearBuffer();
         Nokia5110_DisplayBuffer(); // draw buffer
     }
-    else if (gameStart == 1)
+    else if (gameState == SPACEINVADERS_INGAME)
     {
         /* ADC Slidepot */
         if (ADCValue_Measure != ADCValue)
@@ -205,7 +249,7 @@ void SysTick_Handler(void)
         }
         
         /* Trigger semaphore */
-        Semaphore = 1;
+        //Semaphore = 1;
     }
     
 }
