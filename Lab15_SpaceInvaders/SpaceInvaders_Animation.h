@@ -32,13 +32,27 @@
 #define BUNKER_MODERATE_DAMAGED 2
 #define BUNKER_UNDAMAGED 3
 
-extern bunker_t playerBunker;
-extern playerShip_t playerShip;
-extern STyp Enemy[NUM_SPRITE];
+typedef struct 
+{
+    unsigned char x;      // x coordinate
+    unsigned char y;      // y coordinate
+    const unsigned char *image[2]; // ptr->image
+    unsigned char life;            // 0=dead, 1=alive
+}Enemy_t;          
+
+typedef struct 
+{
+    unsigned char x;      // x coordinate
+    unsigned char y;      // y coordinate
+    const unsigned char *image[4]; // ptr->image
+    unsigned char life;            // 0=dead, 1=heavy damaged, 2=moderate damaged, 3=undamaged
+} bunker_t;   
 
 void SpaceInvaders_Sprite_Init(void);
 void SpaceInvaders_Sprite_Move(void);
 void SpaceInvaders_Sprite_Draw(void);
+unsigned char SpaceInvaders_Sprite_GetX(Enemy_t Enemy[], unsigned char itt);
+unsigned char SpaceInvaders_Sprite_GetY(void);
 
 void SpaceInvaders_PlayerShip_Init(void);
 void SpaceInvaders_PlayerShip_Move(unsigned long Slidepot_Distance);
@@ -47,5 +61,6 @@ void SpaceInvaders_PlayerShip_Draw(void);
 void SpaceInvaders_Bunker_Init(void);
 void SpaceInvaders_Bunker_Defense(void);
 void SpaceInvaders_Bunker_Draw(unsigned char bunkerLife);
+unsigned char SpaceInvaders_Bunker_GetY(void);
 
 #endif /* _SPACEINVADERS_SPRITE_H_ */

@@ -80,6 +80,15 @@
 #include "SpaceInvaders_Sound.h"
 #include "SpaceInvaders_Animation.h"
 
+#define LEVEL_1 1
+#define LEVEL_2 2
+#define LEVEL_3 3
+#define LEVEL_4 4
+#define LEVEL_5 5
+#define LEVEL_6 6
+#define LEVEL_7 7
+#define LEVEL_8 8
+
 void DisableInterrupts(void); // Disable interrupts
 void EnableInterrupts(void);  // Enable interrupts
 void Delay100ms(unsigned long count); // time delay in 0.1 seconds
@@ -89,12 +98,15 @@ static unsigned long ADCValue_Measure;
 static unsigned long ADCValue;     
 static unsigned char ADCFlag = 0;  
 
+static unsigned char countSemaphore = 0;
 typedef enum
 {
     SPACEINVADERS_WELCOME,
     SPACEINVADERS_START,
     SPACEINVADERS_INGAME,
-    SPACEINVADERS_GAMEOVER
+    SPACEINVADERS_GAMEOVER,
+    SPACEINVADERS_WAITSTATE,
+    SPACEINVADERS_END
 }gameState_t;
 static gameState_t gameState = SPACEINVADERS_WELCOME;
 static unsigned char Semaphore = 0;
@@ -148,13 +160,12 @@ int main(void)
     // Delay100ms(50); // delay 5 sec at 50 MHz
 
     ADC0_Init();
-    SpaceInvaders_SysTick_Init(2666666); //30 Hz
+    SpaceInvaders_SysTick_Init(2639999); //30 Hz 
     SpaceInvaders_Switches_PortE_Init();
     SpaceInvaders_LEDs_PortB_Init();
     SpaceInvaders_Sound_Init();
-    SpaceInvaders_Sprite_Init();
-    SpaceInvaders_PlayerShip_Init();
-    SpaceInvaders_Bunker_Init();
+    
+    Nokia5110_Clear();
 
     EnableInterrupts();
     while (1)
@@ -162,7 +173,8 @@ int main(void)
         switch (gameState)
         {
         case SPACEINVADERS_WELCOME:
-            Nokia5110_Clear();
+            Nokia5110_ClearBuffer();
+            Nokia5110_DisplayBuffer();
             Nokia5110_SetCursor(0, 0);
             Nokia5110_OutString("HELLO PLAYER");
             Nokia5110_SetCursor(2, 1);
@@ -171,9 +183,20 @@ int main(void)
             Nokia5110_OutString("Press Fire");
             Nokia5110_SetCursor(2, 4);
             Nokia5110_OutString("to play!");
+            SpaceInvaders_Sprite_Init();
+            SpaceInvaders_PlayerShip_Init();
+            SpaceInvaders_Bunker_Init();
+            Delay100ms(1);
+            gameState = SPACEINVADERS_WAITSTATE;
             break;
         
+        case SPACEINVADERS_WAITSTATE:
+            /* do nothing */
+            break;
+
         case SPACEINVADERS_START:
+            Nokia5110_ClearBuffer();
+            Nokia5110_DisplayBuffer(); // draw buffer
             ADCValue_Measure = ADC0_In();
             ADCValue = ADCValue_Measure;
             SpaceInvaders_PlayerShip_Move(ADCValue);
@@ -185,40 +208,51 @@ int main(void)
             break;
 
         case SPACEINVADERS_INGAME:
-            SpaceInvaders_Sprite_Move();
-            SpaceInvaders_Sprite_Draw();
-            SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
-            /* Move player ship */
-            if (ADCFlag == 1)
+            while (Semaphore == 0);
+            if (SpaceInvaders_Sprite_GetY() == SpaceInvaders_Bunker_GetY()-4)
             {
-                SpaceInvaders_PlayerShip_Move(ADCValue);
-                SpaceInvaders_PlayerShip_Draw();
-                ADCFlag = 0;
+                gameState = SPACEINVADERS_GAMEOVER;
+                Nokia5110_ClearBuffer();
+                Nokia5110_DisplayBuffer();
             }
+            else
+            {
+                Nokia5110_ClearBuffer();
+                if (countSemaphore == LEVEL_1)
+                {
+                    SpaceInvaders_Sprite_Move();
+                    countSemaphore = 0;
+                }
+                SpaceInvaders_Sprite_Draw();
+                SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
+                SpaceInvaders_PlayerShip_Draw();
+                ADCValue = ADC0_In();
+                Semaphore = 0;
+            }
+            
+            break;
+
+        case SPACEINVADERS_GAMEOVER:
+            Nokia5110_SetCursor(1, 0);
+            Nokia5110_OutString("GAME OVER!");
+            Nokia5110_SetCursor(1, 1);
+            Nokia5110_OutString("Try again?");
+            Nokia5110_SetCursor(1, 3);
+            Nokia5110_OutString("Press Fire");
+            Nokia5110_SetCursor(2, 4);
+            Nokia5110_OutString("button!");
+            Delay100ms(1);
+            gameState = SPACEINVADERS_END;
+            break;
+
+        case SPACEINVADERS_END:
+            /* do nothing */
             break;
 
         default:
+            /* do nothing */
             break;
         }
-
-        // if (gameState == 1)
-        // {
-        //     ADCValue_Measure = ADC0_In();
-        //     if (Semaphore == 1)
-        //     {
-        //         SpaceInvaders_Sprite_Move();
-        //         SpaceInvaders_Sprite_Draw();
-        //         /* Move player ship */
-        //         if (ADCFlag == 1)
-        //         {
-        //             SpaceInvaders_PlayerShip_Move(ADCValue);
-        //             SpaceInvaders_PlayerShip_Draw();
-        //             ADCFlag = 0;
-        //         }
-        //         SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
-        //         Semaphore = 0;
-        //     }
-        // }
         
     }
 }
@@ -226,32 +260,27 @@ int main(void)
 
 void SysTick_Handler(void)
 {
-    if ((gameState == SPACEINVADERS_WELCOME) && (SpaceInvaders_GetSwitchState_PE0() == SWITCH_PRESSED))
+    if ((gameState == SPACEINVADERS_WAITSTATE) && (SpaceInvaders_GetSwitchState_PE0() == SWITCH_PRESSED))
     {
         gameState = SPACEINVADERS_START;
-        Nokia5110_ClearBuffer();
-        Nokia5110_DisplayBuffer(); // draw buffer
     }
     else if (gameState == SPACEINVADERS_INGAME)
     {
-        /* ADC Slidepot */
-        if (ADCValue_Measure != ADCValue)
-        {
-            ADCValue = ADCValue_Measure;
-            ADCFlag = 1;
-        }
-
+        SpaceInvaders_PlayerShip_Move(ADCValue);
         /* check if fire button is pressed */
         if (SpaceInvaders_GetSwitchState_PE0() == SWITCH_PRESSED)
         {
             /* play shoot sound */
             SpaceInvaders_Sound_Shoot();
         }
-        
+        countSemaphore++;
         /* Trigger semaphore */
-        //Semaphore = 1;
+        Semaphore = 1;
     }
-    
+    else if ((gameState == SPACEINVADERS_END) && (SpaceInvaders_GetSwitchState_PE0() == SWITCH_PRESSED))
+    {
+        gameState = SPACEINVADERS_WELCOME;
+    }
 }
 
 void Delay100ms(unsigned long count)

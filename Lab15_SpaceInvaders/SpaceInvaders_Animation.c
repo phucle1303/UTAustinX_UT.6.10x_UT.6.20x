@@ -248,17 +248,8 @@ const unsigned char Laser1[] = {
     0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF};
 
-
-struct State 
-{
-    unsigned long x;      // x coordinate
-    unsigned long y;      // y coordinate
-    const unsigned char *image[2]; // ptr->image
-    unsigned char life;            // 0=dead, 1=alive
-};          
-typedef struct State STyp;
-STyp Enemy[NUM_SPRITE];
-
+Enemy_t Enemy[NUM_SPRITE];
+bunker_t playerBunker;
 typedef enum 
 {
     RIGHT = 0,
@@ -293,7 +284,7 @@ void SpaceInvaders_Sprite_Move(void)
             Enemy[i].x += 1;
         }
         moveCount++;
-        if (moveCount == 3)
+        if (moveCount == 4)
         {
             Move_state = DOWN;
         }
@@ -343,7 +334,7 @@ void SpaceInvaders_Sprite_Draw(void)
 {
     unsigned char i;
     unsigned char FrameCount=0;
-    Nokia5110_ClearBuffer();
+    // Nokia5110_ClearBuffer();
     for (i = 0; i < NUM_SPRITE; i++)
     {
         if (Enemy[i].life > 0)
@@ -355,10 +346,21 @@ void SpaceInvaders_Sprite_Draw(void)
     FrameCount = (FrameCount+1)&0x01; // 0,1,0,1,...
 }
 
+unsigned char SpaceInvaders_Sprite_GetX(Enemy_t Enemy[], unsigned char itt)
+{
+    return Enemy[itt].x;
+}
+
+/* sprites always have the same y coordinator */
+unsigned char SpaceInvaders_Sprite_GetY(void)
+{
+    return Enemy[0].y;
+}
+
 typedef struct 
 {
-    unsigned long x;      // x coordinate
-    unsigned long y;      // y coordinate
+    unsigned char x;      // x coordinate
+    unsigned char y;      // y coordinate
     const unsigned char *image; // ptr->image
     unsigned char life;            // 0=dead, 1=alive
 } playerShip_t;          
@@ -389,13 +391,13 @@ static unsigned long map(unsigned long x, unsigned long in_min, unsigned long in
 
 void SpaceInvaders_PlayerShip_Move(unsigned long Slidepot_Distance)
 {
-    unsigned long distance = map(Slidepot_Distance, 0, 4095, 0, 65);
+    unsigned long distance = map(Slidepot_Distance, 0, 4095, 0, 66);
     playerShip.x = distance; 
 }
 
 void SpaceInvaders_PlayerShip_Draw(void)
 {
-    Nokia5110_ClearBuffer();
+    //Nokia5110_ClearBuffer();
     if (playerShip.life > 0)
     {
         Nokia5110_PrintBMP(playerShip.x, playerShip.y, playerShip.image, 0);
@@ -403,15 +405,7 @@ void SpaceInvaders_PlayerShip_Draw(void)
     Nokia5110_DisplayBuffer();
 }
 
-typedef struct 
-{
-    unsigned long x;      // x coordinate
-    unsigned long y;      // y coordinate
-    const unsigned char *image[4]; // ptr->image
-    unsigned char life;            // 0=dead, 1=heavy damaged, 2=moderate damaged, 3=undamaged
-} bunker_t;          
-bunker_t playerBunker;
-
+       
 void SpaceInvaders_Bunker_Init(void)
 {
     playerBunker.x = 33;
@@ -425,7 +419,7 @@ void SpaceInvaders_Bunker_Init(void)
 
 void SpaceInvaders_Bunker_Draw(unsigned char bunkerLife)
 {
-    Nokia5110_ClearBuffer();
+    //Nokia5110_ClearBuffer();
     switch (bunkerLife)
     {
     case BUNKER_DEAD:
@@ -448,6 +442,11 @@ void SpaceInvaders_Bunker_Draw(unsigned char bunkerLife)
         break;
     }
     Nokia5110_DisplayBuffer();
+}
+
+unsigned char SpaceInvaders_Bunker_GetY(void)
+{
+    return playerBunker.y;
 }
 
 // int main(void)

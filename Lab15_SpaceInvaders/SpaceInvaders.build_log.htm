@@ -9,16 +9,29 @@ Project File Date:  08/06/2023
 <h2>Output:</h2>
 Build target 'SpaceInvaders'
 compiling SpaceInvaders.c...
+SpaceInvaders.c(90): warning:  #177-D: variable "ADCFlag" was declared but never referenced
+  static unsigned char ADCFlag = 0;  
+SpaceInvaders.c: 1 warning, 0 errors
 linking...
-Program Size: Code=5190 RO-data=20718 RW-data=84 ZI-data=1820  
-".\SpaceInvaders.axf" - 0 Error(s), 0 Warning(s).
-paceInvaders_LEDs.c...
-compiling SpaceInvaders_Switches.c...
-compiling SpaceInvaders_SysTick.c...
-compiling SpaceInvaders_Timer2A.c...
-compiling DAC.c...
-compiling SpaceInvaders_Sound.c...
+Program Size: Code=5590 RO-data=20718 RW-data=84 ZI-data=1804  
+".\SpaceInvaders.axf" - 0 Error(s), 1 Warning(s).
+</pre>
+</body>
+</html>
+ Warning(s).
+s.c(90): warning:  #177-D: variable "ADCFlag" was declared but never referenced
+  static unsigned char ADCFlag = 0;  
+SpaceInvaders.c: 3 warnings, 0 errors
 compiling SpaceInvaders_Animation.c...
+SpaceInvaders_Animation.h(55): warning:  #1295-D: Deprecated declaration SpaceInvaders_Sprite_GetY - give arg types
+  unsigned char SpaceInvaders_Sprite_GetY();
+SpaceInvaders_Animation.h(64): warning:  #1295-D: Deprecated declaration SpaceInvaders_Bunker_GetY - give arg types
+  unsigned char SpaceInvaders_Bunker_GetY();
+SpaceInvaders_Animation.c: 2 warnings, 0 errors
 linking...
-Program Size: Code=5174 RO-data=20718 RW-data=84 ZI-data=1820  
-".\SpaceInvaders.axf" - 0 Error(s), 0 Warning(s).
+Program Size: Code=5506 RO-data=20718 RW-data=84 ZI-data=1804  
+".\SpaceInvaders.axf" - 0 Error(s), 5 Warning(s).
+igned char pos)
+SpaceInvaders_Animation.c: 0 warnings, 4 errors
+".\SpaceInvaders.axf" - 6 Error(s), 1 Warning(s).
+Target not created
