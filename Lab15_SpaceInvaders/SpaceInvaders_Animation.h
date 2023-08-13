@@ -25,12 +25,26 @@
 #ifndef _SPACEINVADERS_SPRITE_H_
 #define _SPACEINVADERS_SPRITE_H_
 
-#define NUM_SPRITE 5
+#define NUM_SPRITE              5
 
-#define BUNKER_DEAD 0
-#define BUNKER_HEAVY_DAMAGED 1
+#define SPRITES_WIDTH           16
+#define SPRITES_HEIGHT          10
+
+#define BUNKER_DEAD             0
+#define BUNKER_HEAVY_DAMAGED    1
 #define BUNKER_MODERATE_DAMAGED 2
-#define BUNKER_UNDAMAGED 3
+#define BUNKER_UNDAMAGED        3
+#define BUNKER_WIDTH            18
+#define BUNKER_HEIGHT           5
+
+#define PLAYERSHIP_WIDTH        18
+#define PLAYERSHIP_HEIGHT       8
+
+#define SHIPMISSILE_WIDTH       4
+#define SHIPMISSILE_HEIGHT      9
+
+#define NOKIA_WIDTH             48-1
+#define NOKIA_HEIGHT            84-1
 
 typedef struct 
 {
@@ -48,19 +62,41 @@ typedef struct
     unsigned char life;            // 0=dead, 1=heavy damaged, 2=moderate damaged, 3=undamaged
 } bunker_t;   
 
+typedef struct
+{
+    unsigned char x;      // x coordinate
+    unsigned char y;      // y coordinate
+    const unsigned char *image[2];
+    unsigned char hit; //0=no hit, 1=hit
+}missile_t;
+
+
 void SpaceInvaders_Sprite_Init(void);
 void SpaceInvaders_Sprite_Move(void);
-void SpaceInvaders_Sprite_Draw(void);
-unsigned char SpaceInvaders_Sprite_GetX(Enemy_t Enemy[], unsigned char itt);
+void SpaceInvaders_Sprite_DrawAlive(void);
+void SpaceInvaders_Sprite_DrawDead(void);
+unsigned char SpaceInvaders_Sprite_GetX(Enemy_t Enemy);
 unsigned char SpaceInvaders_Sprite_GetY(void);
+unsigned char SpaceInvaders_Sprite_GetLife(Enemy_t);
+// void SpaceInvaders_Sprite_Kill(Enemy_t);
 
 void SpaceInvaders_PlayerShip_Init(void);
 void SpaceInvaders_PlayerShip_Move(unsigned long Slidepot_Distance);
 void SpaceInvaders_PlayerShip_Draw(void);
+unsigned char SpaceInvaders_PlayerShip_GetX(void);
+unsigned char SpaceInvaders_PlayerShip_GetY(void);
 
 void SpaceInvaders_Bunker_Init(void);
 void SpaceInvaders_Bunker_Defense(void);
 void SpaceInvaders_Bunker_Draw(unsigned char bunkerLife);
 unsigned char SpaceInvaders_Bunker_GetY(void);
+
+void SpaceInvaders_ShipMissile_Init(void);
+void SpaceInvaders_ShipMissile_SetPosMissile(unsigned char playerShipX, unsigned char playerShipY);
+void SpaceInvaders_ShipMissile_Move(void);
+void SpaceInvaders_ShipMissile_Draw(void);
+unsigned char SpaceInvaders_ShipMissile_GetX(void);
+unsigned char SpaceInvaders_ShipMissile_GetY(void);
+unsigned char SpaceInvaders_ShipMissile_Sprites_Hit(void);
 
 #endif /* _SPACEINVADERS_SPRITE_H_ */

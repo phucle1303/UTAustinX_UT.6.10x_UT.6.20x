@@ -249,7 +249,10 @@ const unsigned char Laser1[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF};
 
 Enemy_t Enemy[NUM_SPRITE];
+unsigned char EnemyDead[NUM_SPRITE];
 bunker_t playerBunker;
+missile_t shipMissile;
+
 typedef enum 
 {
     RIGHT = 0,
@@ -264,12 +267,14 @@ void SpaceInvaders_Sprite_Init(void)
     unsigned char i;
     for (i = 0; i < NUM_SPRITE; i++)
     {
+        EnemyDead[i] = 0;
         Enemy[i].x = 16 * i;
         Enemy[i].y = 10;
         Enemy[i].image[0] = SmallEnemy10PointA;
         Enemy[i].image[1] = SmallEnemy10PointB;
         Enemy[i].life = 1;
     }
+
 }
 void SpaceInvaders_Sprite_Move(void)
 {
@@ -330,7 +335,7 @@ void SpaceInvaders_Sprite_Move(void)
     }
 }
 
-void SpaceInvaders_Sprite_Draw(void)
+void SpaceInvaders_Sprite_DrawAlive(void)
 {
     unsigned char i;
     unsigned char FrameCount=0;
@@ -346,15 +351,35 @@ void SpaceInvaders_Sprite_Draw(void)
     FrameCount = (FrameCount+1)&0x01; // 0,1,0,1,...
 }
 
-unsigned char SpaceInvaders_Sprite_GetX(Enemy_t Enemy[], unsigned char itt)
+void SpaceInvaders_Sprite_DrawDead(void)
 {
-    return Enemy[itt].x;
+    unsigned char i;
+    // Nokia5110_ClearBuffer();
+    for (i = 0; i < NUM_SPRITE; i++)
+    {
+        if (EnemyDead[i] == 0 && Enemy[i].life == 0)
+        {
+            Nokia5110_PrintBMP(Enemy[i].x, Enemy[i].y, SmallExplosion0, 0);
+            EnemyDead[i] = 1;
+        }
+    }
+    Nokia5110_DisplayBuffer(); // draw buffer
+}
+
+unsigned char SpaceInvaders_Sprite_GetX(Enemy_t Enemy)
+{
+    return Enemy.x;
 }
 
 /* sprites always have the same y coordinator */
-unsigned char SpaceInvaders_Sprite_GetY(void)
+unsigned char SpaceInvaders_Sprite_GetY()
 {
     return Enemy[0].y;
+}
+
+unsigned char SpaceInvaders_Sprite_GetLife(Enemy_t Enemy)
+{
+    return Enemy.life;
 }
 
 typedef struct 
@@ -405,6 +430,15 @@ void SpaceInvaders_PlayerShip_Draw(void)
     Nokia5110_DisplayBuffer();
 }
 
+unsigned char SpaceInvaders_PlayerShip_GetX(void)
+{
+    return playerShip.x;
+}
+
+unsigned char SpaceInvaders_PlayerShip_GetY(void)
+{
+    return playerShip.y;
+}
        
 void SpaceInvaders_Bunker_Init(void)
 {
@@ -447,6 +481,72 @@ void SpaceInvaders_Bunker_Draw(unsigned char bunkerLife)
 unsigned char SpaceInvaders_Bunker_GetY(void)
 {
     return playerBunker.y;
+}
+
+void SpaceInvaders_ShipMissile_Init(void)
+{
+    shipMissile.x = 0;
+    shipMissile.y = 0;
+    shipMissile.image[0] = Missile0;
+    shipMissile.image[1] = Missile2;
+    shipMissile.hit = 0;
+}
+
+void SpaceInvaders_ShipMissile_SetPosMissile(unsigned char playerShipX, unsigned char playerShipY)
+{
+    shipMissile.x = playerShipX + (PLAYERSHIP_WIDTH/2);
+    shipMissile.y = playerShipY - PLAYERSHIP_HEIGHT;
+}
+
+void SpaceInvaders_ShipMissile_Move(void)
+{
+    (shipMissile.y)--;
+}
+
+void SpaceInvaders_ShipMissile_Draw(void)
+{
+    if (shipMissile.hit == 0)
+    {
+        Nokia5110_PrintBMP(shipMissile.x, shipMissile.y, shipMissile.image[0], 0);
+    }
+    else
+    {
+        Nokia5110_PrintBMP(shipMissile.x, shipMissile.y, shipMissile.image[1], 0);
+        if (SpaceInvaders_ShipMissile_GetY() - SHIPMISSILE_HEIGHT == 1)
+        {
+            shipMissile.hit=0;
+        }
+    }
+    Nokia5110_DisplayBuffer();
+}
+
+unsigned char SpaceInvaders_ShipMissile_GetX(void)
+{
+    return shipMissile.x;
+}
+
+unsigned char SpaceInvaders_ShipMissile_GetY(void)
+{
+    return shipMissile.y;
+}
+
+unsigned char SpaceInvaders_ShipMissile_Sprites_Hit(void)
+{
+    unsigned char returnVal = 0;
+    unsigned char i;
+    for (i=0; i<NUM_SPRITE; i++)
+    {
+        if ((Enemy[i].y == SpaceInvaders_ShipMissile_GetY()) && \
+            (SpaceInvaders_ShipMissile_GetX() >= Enemy[i].x) && \
+            (SpaceInvaders_ShipMissile_GetX() < (Enemy[i].x + SPRITES_WIDTH)) && \
+            (Enemy[i].life == 1))
+        {
+            Enemy[i].life = 0;
+            shipMissile.hit = 1;
+            returnVal = 1;
+        }
+    }
+    return returnVal;
 }
 
 // int main(void)

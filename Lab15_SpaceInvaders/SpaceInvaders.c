@@ -80,14 +80,9 @@
 #include "SpaceInvaders_Sound.h"
 #include "SpaceInvaders_Animation.h"
 
-#define LEVEL_1 1
-#define LEVEL_2 2
-#define LEVEL_3 3
-#define LEVEL_4 4
-#define LEVEL_5 5
-#define LEVEL_6 6
-#define LEVEL_7 7
-#define LEVEL_8 8
+#define LEVEL_SLOW      3
+#define LEVEL_MEDIUM    2
+#define LEVEL_FAST      1
 
 void DisableInterrupts(void); // Disable interrupts
 void EnableInterrupts(void);  // Enable interrupts
@@ -95,14 +90,16 @@ void Delay100ms(unsigned long count); // time delay in 0.1 seconds
 unsigned long Convert(unsigned long sample);
 
 static unsigned long ADCValue_Measure;   
-static unsigned long ADCValue;     
-static unsigned char ADCFlag = 0;  
+static unsigned long ADCValue; 
+
+static unsigned char shootFlag = 0;
 
 static unsigned char countSemaphore = 0;
 typedef enum
 {
     SPACEINVADERS_WELCOME,
     SPACEINVADERS_START,
+    SPACEINVADERS_SHOWLEVEL,
     SPACEINVADERS_INGAME,
     SPACEINVADERS_GAMEOVER,
     SPACEINVADERS_WAITSTATE,
@@ -186,8 +183,18 @@ int main(void)
             SpaceInvaders_Sprite_Init();
             SpaceInvaders_PlayerShip_Init();
             SpaceInvaders_Bunker_Init();
+            SpaceInvaders_ShipMissile_Init();
             Delay100ms(1);
             gameState = SPACEINVADERS_WAITSTATE;
+            break;
+
+        case SPACEINVADERS_SHOWLEVEL:
+            Nokia5110_ClearBuffer();
+            Nokia5110_DisplayBuffer();
+            Nokia5110_SetCursor(2, 1);
+            Nokia5110_OutString("Level 1");
+            Delay100ms(5);
+            gameState = SPACEINVADERS_START;
             break;
         
         case SPACEINVADERS_WAITSTATE:
@@ -202,14 +209,14 @@ int main(void)
             SpaceInvaders_PlayerShip_Move(ADCValue);
             SpaceInvaders_PlayerShip_Draw();
             SpaceInvaders_Sprite_Move();
-            SpaceInvaders_Sprite_Draw();
+            SpaceInvaders_Sprite_DrawAlive();
             SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
             gameState = SPACEINVADERS_INGAME;
             break;
 
         case SPACEINVADERS_INGAME:
             while (Semaphore == 0);
-            if (SpaceInvaders_Sprite_GetY() == SpaceInvaders_Bunker_GetY()-4)
+            if (SpaceInvaders_Sprite_GetY() == SpaceInvaders_Bunker_GetY()-BUNKER_HEIGHT)
             {
                 gameState = SPACEINVADERS_GAMEOVER;
                 Nokia5110_ClearBuffer();
@@ -218,14 +225,32 @@ int main(void)
             else
             {
                 Nokia5110_ClearBuffer();
-                if (countSemaphore == LEVEL_1)
+                if (countSemaphore == LEVEL_SLOW)
                 {
                     SpaceInvaders_Sprite_Move();
                     countSemaphore = 0;
                 }
-                SpaceInvaders_Sprite_Draw();
+                if (shootFlag == 1)
+                {
+                    SpaceInvaders_ShipMissile_Move();
+                    SpaceInvaders_ShipMissile_Draw();
+                    if (SpaceInvaders_ShipMissile_GetY() - SHIPMISSILE_HEIGHT == 1)
+                    {
+                        shootFlag = 0;
+                    }
+                    
+                }
+                if (SpaceInvaders_ShipMissile_Sprites_Hit() == 0)
+                {
+                    SpaceInvaders_Sprite_DrawAlive();
+                }
+                else
+                {
+                    SpaceInvaders_Sprite_DrawDead();
+                }
                 SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
                 SpaceInvaders_PlayerShip_Draw();
+                
                 ADCValue = ADC0_In();
                 Semaphore = 0;
             }
@@ -262,16 +287,18 @@ void SysTick_Handler(void)
 {
     if ((gameState == SPACEINVADERS_WAITSTATE) && (SpaceInvaders_GetSwitchState_PE0() == SWITCH_PRESSED))
     {
-        gameState = SPACEINVADERS_START;
+        gameState = SPACEINVADERS_SHOWLEVEL;
     }
     else if (gameState == SPACEINVADERS_INGAME)
     {
         SpaceInvaders_PlayerShip_Move(ADCValue);
         /* check if fire button is pressed */
-        if (SpaceInvaders_GetSwitchState_PE0() == SWITCH_PRESSED)
+        if (shootFlag == 0 && SpaceInvaders_GetSwitchState_PE0() == SWITCH_PRESSED)
         {
+            SpaceInvaders_ShipMissile_SetPosMissile(SpaceInvaders_PlayerShip_GetX(), SpaceInvaders_PlayerShip_GetY());
+            shootFlag = 1;
             /* play shoot sound */
-            SpaceInvaders_Sound_Shoot();
+            //SpaceInvaders_Sound_Shoot();
         }
         countSemaphore++;
         /* Trigger semaphore */
