@@ -43,8 +43,8 @@
 #define SHIPMISSILE_WIDTH       4
 #define SHIPMISSILE_HEIGHT      9
 
-#define NOKIA_WIDTH             48-1
-#define NOKIA_HEIGHT            84-1
+#define NOKIA_HEIGHT            48-1
+#define NOKIA_WIDTH             84-1
 
 typedef struct 
 {

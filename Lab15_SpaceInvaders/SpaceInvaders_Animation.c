@@ -253,6 +253,10 @@ unsigned char EnemyDead[NUM_SPRITE];
 bunker_t playerBunker;
 missile_t shipMissile;
 
+static unsigned char lastRightSprite =  NUM_SPRITE - 1;
+static unsigned char firstLeftSprite =  0;
+static unsigned char moveRightSignal =  1;
+static unsigned char moveLeftSignal =  0;
 typedef enum 
 {
     RIGHT = 0,
@@ -265,6 +269,10 @@ Sprite_move_t Move_state = RIGHT;
 void SpaceInvaders_Sprite_Init(void)
 {
     unsigned char i;
+    lastRightSprite =  NUM_SPRITE - 1;
+    firstLeftSprite =  0;
+    moveRightSignal =  1;
+    moveLeftSignal =  0;
     for (i = 0; i < NUM_SPRITE; i++)
     {
         EnemyDead[i] = 0;
@@ -276,57 +284,93 @@ void SpaceInvaders_Sprite_Init(void)
     }
 
 }
-void SpaceInvaders_Sprite_Move(void)
+
+static void Sprite_Move_Right(void)
 {
     unsigned char i;
-    static unsigned char moveCount = 0;
+    for (i=0; i<NUM_SPRITE; i++)
+    {
+        Enemy[i].x++;
+    }
+}
 
+static void Sprite_Move_Left(void)
+{
+    unsigned char i;
+    for (i=0; i<NUM_SPRITE; i++)
+    {
+        Enemy[i].x--;
+    }
+}
+
+static void Sprite_Move_Down(void)
+{
+    unsigned char i;
+    for (i=0; i<NUM_SPRITE; i++)
+    {
+        Enemy[i].y++;
+    }
+}
+
+void SpaceInvaders_Sprite_Move(void)
+{
     switch (Move_state)
     {
     case RIGHT:
-        for (i = 0; i < NUM_SPRITE; i++)
+        if (Enemy[lastRightSprite].life > 0)
         {
-            Enemy[i].x += 1;
-        }
-        moveCount++;
-        if (moveCount == 4)
-        {
-            Move_state = DOWN;
+            if (moveRightSignal == 1)
+            {
+                if ((Enemy[lastRightSprite].x + SPRITES_WIDTH) < NOKIA_WIDTH)
+                {
+                    Sprite_Move_Right();
+                }
+                else if ((Enemy[lastRightSprite].x + SPRITES_WIDTH) == NOKIA_WIDTH)
+                {
+                    Move_state = DOWN;
+                    moveLeftSignal = 1;
+                    moveRightSignal = 0;
+                }
+            }
         }
         else
         {
-            /* do nothing */
+            lastRightSprite--;
         }
         break;
 
     case DOWN:
-        for (i = 0; i < NUM_SPRITE; i++)
-        {
-            Enemy[i].y += 1;
-        }
-        if (moveCount == 0)
-        {
-            Move_state = RIGHT;
-        }
-        else
+        Sprite_Move_Down();
+        if (moveLeftSignal == 1)
         {
             Move_state = LEFT;
+        }
+        else if (moveRightSignal == 1)
+        {
+            Move_state = RIGHT;
         }
         break;
 
     case LEFT:
-        for (i = 0; i < NUM_SPRITE; i++)
+        if (Enemy[firstLeftSprite].life > 0)
         {
-            Enemy[i].x -= 1;
-        }
-        moveCount--;
-        if (moveCount == 0)
-        {
-            Move_state = DOWN;
+            if (moveLeftSignal == 1)
+            {
+                if (Enemy[firstLeftSprite].x > 0)
+                {
+                    Sprite_Move_Left();
+                }
+                else if (Enemy[firstLeftSprite].x == 0)
+                {
+                    Move_state = DOWN;
+                    moveLeftSignal = 0;
+                    moveRightSignal = 1;
+                }
+            }
         }
         else
         {
-            /* do nothing */
+            firstLeftSprite++;
         }
         break;
 

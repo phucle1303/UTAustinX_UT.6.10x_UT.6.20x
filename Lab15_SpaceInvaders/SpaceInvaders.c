@@ -83,6 +83,7 @@
 #define LEVEL_SLOW      3
 #define LEVEL_MEDIUM    2
 #define LEVEL_FAST      1
+#define LEVEL_SUPERFAST 0
 
 void DisableInterrupts(void); // Disable interrupts
 void EnableInterrupts(void);  // Enable interrupts
@@ -95,6 +96,11 @@ static unsigned long ADCValue;
 static unsigned char shootFlag = 0;
 
 static unsigned char countSemaphore = 0;
+
+static unsigned long scoreCount = 0;
+static unsigned long scoreFinal = 0;
+
+static unsigned char levelTrack = LEVEL_SLOW;
 typedef enum
 {
     SPACEINVADERS_WELCOME,
@@ -102,6 +108,8 @@ typedef enum
     SPACEINVADERS_SHOWLEVEL,
     SPACEINVADERS_INGAME,
     SPACEINVADERS_GAMEOVER,
+    SPACEINVADERS_LEVELWIN,
+    SPACEINVADERS_GAMEWIN,
     SPACEINVADERS_WAITSTATE,
     SPACEINVADERS_END
 }gameState_t;
@@ -128,7 +136,8 @@ static unsigned char Semaphore = 0;
 
 int main(void)
 {
-    TExaS_Init(SSI0_Real_Nokia5110_Scope); // set system clock to 80 MHz
+
+	TExaS_Init(SSI0_Real_Nokia5110_Scope); // set system clock to 80 MHz
     Random_Init(1);
     Nokia5110_Init();
     Nokia5110_ClearBuffer();
@@ -180,19 +189,36 @@ int main(void)
             Nokia5110_OutString("Press Fire");
             Nokia5110_SetCursor(2, 4);
             Nokia5110_OutString("to play!");
-            SpaceInvaders_Sprite_Init();
-            SpaceInvaders_PlayerShip_Init();
-            SpaceInvaders_Bunker_Init();
-            SpaceInvaders_ShipMissile_Init();
             Delay100ms(1);
             gameState = SPACEINVADERS_WAITSTATE;
             break;
 
         case SPACEINVADERS_SHOWLEVEL:
+            Nokia5110_Clear();
             Nokia5110_ClearBuffer();
             Nokia5110_DisplayBuffer();
             Nokia5110_SetCursor(2, 1);
-            Nokia5110_OutString("Level 1");
+            switch (levelTrack)
+            {
+            case LEVEL_SLOW:
+                Nokia5110_OutString("Level 1");
+                break;
+            
+            case LEVEL_MEDIUM:
+                Nokia5110_OutString("Level 2");
+                break;
+
+            case LEVEL_FAST:
+                Nokia5110_OutString("Level 3");
+                break;
+
+            case LEVEL_SUPERFAST:
+                Nokia5110_OutString("Level 4");
+                break;
+            default:
+                break;
+            }
+            
             Delay100ms(5);
             gameState = SPACEINVADERS_START;
             break;
@@ -202,16 +228,27 @@ int main(void)
             break;
 
         case SPACEINVADERS_START:
+            Nokia5110_Clear();
             Nokia5110_ClearBuffer();
             Nokia5110_DisplayBuffer(); // draw buffer
+            SpaceInvaders_Sprite_Init();
+            SpaceInvaders_PlayerShip_Init();
+            SpaceInvaders_Bunker_Init();
+            SpaceInvaders_ShipMissile_Init();
+            shootFlag = 0;
+            scoreCount = 0;
+            countSemaphore = 0;
             ADCValue_Measure = ADC0_In();
             ADCValue = ADCValue_Measure;
             SpaceInvaders_PlayerShip_Move(ADCValue);
             SpaceInvaders_PlayerShip_Draw();
-            SpaceInvaders_Sprite_Move();
+            // SpaceInvaders_Sprite_Move();
             SpaceInvaders_Sprite_DrawAlive();
             SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
+            Delay100ms(1);
             gameState = SPACEINVADERS_INGAME;
+            Nokia5110_ClearBuffer();
+            Nokia5110_DisplayBuffer(); // draw buffer
             break;
 
         case SPACEINVADERS_INGAME:
@@ -219,13 +256,12 @@ int main(void)
             if (SpaceInvaders_Sprite_GetY() == SpaceInvaders_Bunker_GetY()-BUNKER_HEIGHT)
             {
                 gameState = SPACEINVADERS_GAMEOVER;
-                Nokia5110_ClearBuffer();
-                Nokia5110_DisplayBuffer();
             }
             else
             {
                 Nokia5110_ClearBuffer();
-                if (countSemaphore == LEVEL_SLOW)
+                Nokia5110_DisplayBuffer(); // draw buffer
+                if (countSemaphore == levelTrack)
                 {
                     SpaceInvaders_Sprite_Move();
                     countSemaphore = 0;
@@ -247,6 +283,7 @@ int main(void)
                 else
                 {
                     SpaceInvaders_Sprite_DrawDead();
+                    scoreCount++;
                 }
                 SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
                 SpaceInvaders_PlayerShip_Draw();
@@ -254,10 +291,18 @@ int main(void)
                 ADCValue = ADC0_In();
                 Semaphore = 0;
             }
+            if (scoreCount == 5)
+            {
+                scoreFinal = scoreFinal + scoreCount;
+                gameState = SPACEINVADERS_LEVELWIN;
+            }
             
             break;
 
         case SPACEINVADERS_GAMEOVER:
+            Nokia5110_Clear();
+            Nokia5110_ClearBuffer();
+            Nokia5110_DisplayBuffer();
             Nokia5110_SetCursor(1, 0);
             Nokia5110_OutString("GAME OVER!");
             Nokia5110_SetCursor(1, 1);
@@ -270,8 +315,41 @@ int main(void)
             gameState = SPACEINVADERS_END;
             break;
 
+        case SPACEINVADERS_LEVELWIN:
+            Nokia5110_Clear();
+            Nokia5110_ClearBuffer();
+            Nokia5110_DisplayBuffer();
+            Nokia5110_SetCursor(1, 0);
+            Nokia5110_OutString("Score:");
+            Nokia5110_SetCursor(1, 1);
+            Nokia5110_OutUDec(scoreFinal);
+            Nokia5110_SetCursor(1, 2);
+            if (levelTrack != 0)
+            {
+                levelTrack--;
+            }
+            else
+            {
+                gameState = SPACEINVADERS_GAMEWIN;
+            }
+            Delay100ms(5);
+            gameState = SPACEINVADERS_SHOWLEVEL;
+            break;
+
         case SPACEINVADERS_END:
             /* do nothing */
+            break;
+
+        case SPACEINVADERS_GAMEWIN:
+            Nokia5110_Clear();
+            Nokia5110_ClearBuffer();
+            Nokia5110_DisplayBuffer();
+            Nokia5110_SetCursor(1, 0);
+            Nokia5110_OutString("Score:");
+            Nokia5110_SetCursor(1, 1);
+            Nokia5110_OutUDec(scoreFinal);
+            Nokia5110_SetCursor(1, 3);
+            Nokia5110_OutString("Victory!");
             break;
 
         default:
