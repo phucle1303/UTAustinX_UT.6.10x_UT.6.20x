@@ -46,6 +46,9 @@
 #define NOKIA_HEIGHT            48-1
 #define NOKIA_WIDTH             84-1
 
+#define SPRITE_LASER_WIDTH      2
+#define SPRITE_LASER_HEIGHT     9
+
 typedef struct 
 {
     unsigned char x;      // x coordinate
@@ -70,6 +73,15 @@ typedef struct
     unsigned char hit; //0=no hit, 1=hit
 }missile_t;
 
+typedef struct
+{
+    unsigned char x;
+    unsigned char y;
+    const unsigned char *image[2];
+    unsigned char hit;
+}spriteLaser_t;
+
+
 
 void SpaceInvaders_Sprite_Init(void);
 void SpaceInvaders_Sprite_Move(void);
@@ -78,7 +90,7 @@ void SpaceInvaders_Sprite_DrawDead(void);
 unsigned char SpaceInvaders_Sprite_GetX(Enemy_t Enemy);
 unsigned char SpaceInvaders_Sprite_GetY(void);
 unsigned char SpaceInvaders_Sprite_GetLife(Enemy_t);
-// void SpaceInvaders_Sprite_Kill(Enemy_t);
+
 
 void SpaceInvaders_PlayerShip_Init(void);
 void SpaceInvaders_PlayerShip_Move(unsigned long Slidepot_Distance);
@@ -98,5 +110,10 @@ void SpaceInvaders_ShipMissile_Draw(void);
 unsigned char SpaceInvaders_ShipMissile_GetX(void);
 unsigned char SpaceInvaders_ShipMissile_GetY(void);
 unsigned char SpaceInvaders_ShipMissile_Sprites_Hit(void);
+
+void SpaceInvaders_SpriteLaser_Init(void);
+void SpaceInvaders_SpriteLaser_Move(unsigned long i);
+void SpaceInvaders_SpriteLaser_Draw(unsigned long i);
+unsigned char SpaceInvaders_SpriteLaser_Bunker_Hit(void);
 
 #endif /* _SPACEINVADERS_SPRITE_H_ */

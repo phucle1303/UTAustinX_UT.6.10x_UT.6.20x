@@ -136,34 +136,13 @@ static unsigned char Semaphore = 0;
 
 int main(void)
 {
-
+    unsigned long sprite_to_shoot;
+    unsigned char i;
 	TExaS_Init(SSI0_Real_Nokia5110_Scope); // set system clock to 80 MHz
     Random_Init(1);
     Nokia5110_Init();
     Nokia5110_ClearBuffer();
     Nokia5110_DisplayBuffer(); // draw buffer
-
-    // Nokia5110_Clear();
-    // Nokia5110_SetCursor(0, 0);
-    // Nokia5110_OutString("HELLO PLAYER");
-    // Nokia5110_SetCursor(2, 1);
-    // Nokia5110_OutString("Welcome!");
-    // Nokia5110_SetCursor(1, 3);
-    // Nokia5110_OutString("Press Fire");
-    // Nokia5110_SetCursor(2, 4);
-    // Nokia5110_OutString("to play!");
-
-    // Nokia5110_PrintBMP(32, 47, PlayerShip0, 0); // player ship middle bottom
-    // Nokia5110_PrintBMP(33, 47 - PLAYERH, Bunker0, 0);
-
-    // Nokia5110_PrintBMP(0, ENEMY10H - 1, SmallEnemy10PointA, 0);
-    // Nokia5110_PrintBMP(16, ENEMY10H - 1, SmallEnemy20PointA, 0);
-    // Nokia5110_PrintBMP(32, ENEMY10H - 1, SmallEnemy20PointA, 0);
-    // Nokia5110_PrintBMP(48, ENEMY10H - 1, SmallEnemy30PointA, 0);
-    // Nokia5110_PrintBMP(64, ENEMY10H - 1, SmallEnemy30PointA, 0);
-    // Nokia5110_DisplayBuffer(); // draw buffer
-
-    // Delay100ms(50); // delay 5 sec at 50 MHz
 
     ADC0_Init();
     SpaceInvaders_SysTick_Init(2639999); //30 Hz 
@@ -235,6 +214,7 @@ int main(void)
             SpaceInvaders_PlayerShip_Init();
             SpaceInvaders_Bunker_Init();
             SpaceInvaders_ShipMissile_Init();
+            SpaceInvaders_SpriteLaser_Init();
             shootFlag = 0;
             scoreCount = 0;
             countSemaphore = 0;
@@ -264,6 +244,8 @@ int main(void)
                 if (countSemaphore == levelTrack)
                 {
                     SpaceInvaders_Sprite_Move();
+                    sprite_to_shoot = Random32()%NUM_SPRITE;
+                    
                     countSemaphore = 0;
                 }
                 if (shootFlag == 1)
@@ -285,7 +267,10 @@ int main(void)
                     SpaceInvaders_Sprite_DrawDead();
                     scoreCount++;
                 }
-                SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
+
+                SpaceInvaders_SpriteLaser_Move(sprite_to_shoot);
+                SpaceInvaders_SpriteLaser_Draw(sprite_to_shoot);
+                SpaceInvaders_Bunker_Draw(SpaceInvaders_SpriteLaser_Bunker_Hit());
                 SpaceInvaders_PlayerShip_Draw();
                 
                 ADCValue = ADC0_In();

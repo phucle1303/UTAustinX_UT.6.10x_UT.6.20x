@@ -252,6 +252,7 @@ Enemy_t Enemy[NUM_SPRITE];
 unsigned char EnemyDead[NUM_SPRITE];
 bunker_t playerBunker;
 missile_t shipMissile;
+spriteLaser_t spriteLaser[NUM_SPRITE];
 
 static unsigned char lastRightSprite =  NUM_SPRITE - 1;
 static unsigned char firstLeftSprite =  0;
@@ -591,6 +592,74 @@ unsigned char SpaceInvaders_ShipMissile_Sprites_Hit(void)
         }
     }
     return returnVal;
+}
+
+void SpaceInvaders_SpriteLaser_Init(void)
+{
+    unsigned char i;
+    for (i=0; i<NUM_SPRITE; i++)
+    {
+        spriteLaser[i].x = Enemy[i].x + (SPRITES_WIDTH/2);
+        spriteLaser[i].y = Enemy[i].y + SPRITE_LASER_HEIGHT;
+        spriteLaser[i].image[0] = Laser0;
+        spriteLaser[i].image[1] = Laser1;
+        spriteLaser[i].hit = 0;
+    }
+}
+
+void SpaceInvaders_SpriteLaser_Move(unsigned long i)
+{
+    if (Enemy[i].life > 0)
+    {
+        spriteLaser[i].y++;
+    }
+    
+}
+
+void SpaceInvaders_SpriteLaser_Draw(unsigned long i)
+{
+    if (spriteLaser[i].hit == 0)
+    {
+        Nokia5110_PrintBMP(spriteLaser[i].x, spriteLaser[i].y, spriteLaser[i].image[0], 0);
+    }
+    else
+    {
+        Nokia5110_PrintBMP(spriteLaser[i].x, spriteLaser[i].y, spriteLaser[i].image[1], 0);
+    }
+
+    Nokia5110_DisplayBuffer();
+}
+
+unsigned char SpaceInvaders_SpriteLaser_Bunker_Hit(void)
+{
+    unsigned char retVal = 0;
+    unsigned char i;
+    for (i=0; i<NUM_SPRITE; i++)
+    {
+        if (spriteLaser[i].y == playerBunker.y + BUNKER_HEIGHT &&
+            spriteLaser[i].x >= playerBunker.x &&
+            spriteLaser[i].x < playerBunker.x + BUNKER_WIDTH)
+        {
+            switch (playerBunker.life)
+            {
+            case BUNKER_UNDAMAGED:
+                playerBunker.life = BUNKER_MODERATE_DAMAGED;
+                break;
+            
+            case BUNKER_MODERATE_DAMAGED:
+                playerBunker.life = BUNKER_HEAVY_DAMAGED;
+                break;
+
+            case BUNKER_HEAVY_DAMAGED:
+                playerBunker.life = BUNKER_DEAD;
+                break;
+
+            default:
+                break;
+            }
+        }
+    }
+    return retVal = playerBunker.life;
 }
 
 // int main(void)
