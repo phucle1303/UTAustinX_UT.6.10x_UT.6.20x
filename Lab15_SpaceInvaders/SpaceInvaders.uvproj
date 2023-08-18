@@ -470,6 +470,11 @@
               <FileType>1</FileType>
               <FilePath>.\SpaceInvaders_Animation.c</FilePath>
             </File>
+            <File>
+              <FileName>SpaceInvaders_FIFO.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\SpaceInvaders_FIFO.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

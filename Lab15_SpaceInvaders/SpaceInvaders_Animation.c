@@ -282,8 +282,8 @@ void SpaceInvaders_Sprite_Init(void)
         Enemy[i].image[0] = SmallEnemy10PointA;
         Enemy[i].image[1] = SmallEnemy10PointB;
         Enemy[i].life = 1;
+        Enemy[i].shot = 0;
     }
-
 }
 
 static void Sprite_Move_Right(void)
@@ -427,11 +427,22 @@ unsigned char SpaceInvaders_Sprite_GetLife(Enemy_t Enemy)
     return Enemy.life;
 }
 
+void SpaceInvaders_Sprite_SetShot(unsigned char spriteToShoot)
+{
+    Enemy[spriteToShoot].shot = 1;
+}
+
+unsigned char SpaceInvaders_Sprite_GetShot(unsigned char spriteToShoot)
+{
+    return Enemy[spriteToShoot].shot;
+}
+
+
 typedef struct 
 {
     unsigned char x;      // x coordinate
     unsigned char y;      // y coordinate
-    const unsigned char *image; // ptr->image
+    const unsigned char *image[2]; // ptr->image
     unsigned char life;            // 0=dead, 1=alive
 } playerShip_t;          
 playerShip_t playerShip;
@@ -440,7 +451,8 @@ void SpaceInvaders_PlayerShip_Init(void)
 {
     playerShip.x = 32;
     playerShip.y = 47;
-    playerShip.image = PlayerShip0;
+    playerShip.image[0] = PlayerShip0;
+    playerShip.image[1] = BigExplosion0;
     playerShip.life = 1;
 }
 
@@ -470,9 +482,18 @@ void SpaceInvaders_PlayerShip_Draw(void)
     //Nokia5110_ClearBuffer();
     if (playerShip.life > 0)
     {
-        Nokia5110_PrintBMP(playerShip.x, playerShip.y, playerShip.image, 0);
+        Nokia5110_PrintBMP(playerShip.x, playerShip.y, playerShip.image[0], 0);
+    }
+    else if ((playerShip.life == 0))
+    {
+        Nokia5110_PrintBMP(playerShip.x, playerShip.y, playerShip.image[1], 0);
     }
     Nokia5110_DisplayBuffer();
+}
+
+void SpaceInvaders_PlayerShip_SetLife(unsigned char life)
+{
+    playerShip.life = life;
 }
 
 unsigned char SpaceInvaders_PlayerShip_GetX(void)
@@ -594,45 +615,41 @@ unsigned char SpaceInvaders_ShipMissile_Sprites_Hit(void)
     return returnVal;
 }
 
-void SpaceInvaders_SpriteLaser_Init(void)
+void SpaceInvaders_SpriteLaser_Init(unsigned char spriteToShoot)
 {
-    unsigned char i;
-    for (i=0; i<NUM_SPRITE; i++)
-    {
-        spriteLaser[i].x = Enemy[i].x + (SPRITES_WIDTH/2);
-        spriteLaser[i].y = Enemy[i].y + SPRITE_LASER_HEIGHT;
-        spriteLaser[i].image[0] = Laser0;
-        spriteLaser[i].image[1] = Laser1;
-        spriteLaser[i].hit = 0;
-    }
+    spriteLaser[spriteToShoot].x = Enemy[spriteToShoot].x + (SPRITES_WIDTH/2);
+    spriteLaser[spriteToShoot].y = Enemy[spriteToShoot].y + SPRITE_LASER_HEIGHT;
+    spriteLaser[spriteToShoot].image[0] = Laser0;
+    spriteLaser[spriteToShoot].image[1] = Laser1;
+    spriteLaser[spriteToShoot].hit = 0; 
 }
 
-void SpaceInvaders_SpriteLaser_Move(unsigned long i)
+void SpaceInvaders_SpriteLaser_Move(unsigned char spriteToShoot)
 {
-    if (Enemy[i].life > 0)
-    {
-        spriteLaser[i].y++;
-    }
-    
+    spriteLaser[spriteToShoot].y++;
 }
 
-void SpaceInvaders_SpriteLaser_Draw(unsigned long i)
+void SpaceInvaders_SpriteLaser_Draw(unsigned char spriteToShoot)
 {
-    if (spriteLaser[i].hit == 0)
+    if (spriteLaser[spriteToShoot].hit == 0)
     {
-        Nokia5110_PrintBMP(spriteLaser[i].x, spriteLaser[i].y, spriteLaser[i].image[0], 0);
+        Nokia5110_PrintBMP(spriteLaser[spriteToShoot].x, spriteLaser[spriteToShoot].y, spriteLaser[spriteToShoot].image[0], 0);
     }
     else
     {
-        Nokia5110_PrintBMP(spriteLaser[i].x, spriteLaser[i].y, spriteLaser[i].image[1], 0);
+        Nokia5110_PrintBMP(spriteLaser[spriteToShoot].x, spriteLaser[spriteToShoot].y, spriteLaser[spriteToShoot].image[1], 0);
     }
 
     Nokia5110_DisplayBuffer();
 }
 
+unsigned char SpaceInvaders_SpriteLaser_GetY(unsigned char spriteToShoot)
+{
+    return spriteLaser[spriteToShoot].y;
+}
+
 unsigned char SpaceInvaders_SpriteLaser_Bunker_Hit(void)
 {
-    unsigned char retVal = 0;
     unsigned char i;
     for (i=0; i<NUM_SPRITE; i++)
     {
@@ -659,7 +676,23 @@ unsigned char SpaceInvaders_SpriteLaser_Bunker_Hit(void)
             }
         }
     }
-    return retVal = playerBunker.life;
+    return playerBunker.life;
+}
+
+unsigned char SpaceInvaders_SpriteLaser_PlayerShip_Hit(void)
+{
+    unsigned char retVal = 0;
+    unsigned char i;
+    for (i=0; i<NUM_SPRITE; i++)
+    {
+        if (spriteLaser[i].y == (playerShip.y - PLAYERSHIP_HEIGHT) &&
+            spriteLaser[i].x >= playerShip.x &&
+            spriteLaser[i].x <= playerShip.x + PLAYERSHIP_WIDTH)
+        {
+            retVal = 1;
+        }
+    }
+    return retVal;
 }
 
 // int main(void)

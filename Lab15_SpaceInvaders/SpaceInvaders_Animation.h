@@ -22,8 +22,8 @@
 // SSI0Clk       (SCLK, pin 7) connected to PA2
 // back light    (LED, pin 8) not connected, consists of 4 white LEDs which draw ~80mA total
 
-#ifndef _SPACEINVADERS_SPRITE_H_
-#define _SPACEINVADERS_SPRITE_H_
+#ifndef _SPACEINVADERS_ANIMATION_H_
+#define _SPACEINVADERS_ANIMATION_H_
 
 #define NUM_SPRITE              5
 
@@ -49,12 +49,20 @@
 #define SPRITE_LASER_WIDTH      2
 #define SPRITE_LASER_HEIGHT     9
 
+typedef struct
+{
+    unsigned char x;
+    unsigned char y;
+    const unsigned char *image[2];
+    unsigned char hit;
+}spriteLaser_t;
 typedef struct 
 {
     unsigned char x;      // x coordinate
     unsigned char y;      // y coordinate
     const unsigned char *image[2]; // ptr->image
     unsigned char life;            // 0=dead, 1=alive
+    unsigned char shot;
 }Enemy_t;          
 
 typedef struct 
@@ -73,15 +81,6 @@ typedef struct
     unsigned char hit; //0=no hit, 1=hit
 }missile_t;
 
-typedef struct
-{
-    unsigned char x;
-    unsigned char y;
-    const unsigned char *image[2];
-    unsigned char hit;
-}spriteLaser_t;
-
-
 
 void SpaceInvaders_Sprite_Init(void);
 void SpaceInvaders_Sprite_Move(void);
@@ -90,13 +89,15 @@ void SpaceInvaders_Sprite_DrawDead(void);
 unsigned char SpaceInvaders_Sprite_GetX(Enemy_t Enemy);
 unsigned char SpaceInvaders_Sprite_GetY(void);
 unsigned char SpaceInvaders_Sprite_GetLife(Enemy_t);
-
+void SpaceInvaders_Sprite_SetShot(unsigned char spriteToShoot);
+unsigned char SpaceInvaders_Sprite_GetShot(unsigned char spriteToShoot);
 
 void SpaceInvaders_PlayerShip_Init(void);
 void SpaceInvaders_PlayerShip_Move(unsigned long Slidepot_Distance);
 void SpaceInvaders_PlayerShip_Draw(void);
 unsigned char SpaceInvaders_PlayerShip_GetX(void);
 unsigned char SpaceInvaders_PlayerShip_GetY(void);
+void SpaceInvaders_PlayerShip_SetLife(unsigned char life);
 
 void SpaceInvaders_Bunker_Init(void);
 void SpaceInvaders_Bunker_Defense(void);
@@ -111,9 +112,11 @@ unsigned char SpaceInvaders_ShipMissile_GetX(void);
 unsigned char SpaceInvaders_ShipMissile_GetY(void);
 unsigned char SpaceInvaders_ShipMissile_Sprites_Hit(void);
 
-void SpaceInvaders_SpriteLaser_Init(void);
-void SpaceInvaders_SpriteLaser_Move(unsigned long i);
-void SpaceInvaders_SpriteLaser_Draw(unsigned long i);
+void SpaceInvaders_SpriteLaser_Init(unsigned char spriteToShoot);
+void SpaceInvaders_SpriteLaser_Move(unsigned char spriteToShoot);
+void SpaceInvaders_SpriteLaser_Draw(unsigned char spriteToShoot);
+unsigned char SpaceInvaders_SpriteLaser_GetY(unsigned char spriteToShoot);
 unsigned char SpaceInvaders_SpriteLaser_Bunker_Hit(void);
+unsigned char SpaceInvaders_SpriteLaser_PlayerShip_Hit(void);
 
-#endif /* _SPACEINVADERS_SPRITE_H_ */
+#endif /* _SPACEINVADERS_ANIMATION_H_ */

@@ -79,6 +79,7 @@
 #include "ADC.h"
 #include "SpaceInvaders_Sound.h"
 #include "SpaceInvaders_Animation.h"
+#include "SpaceInvaders_FIFO.h"
 
 #define LEVEL_SLOW      3
 #define LEVEL_MEDIUM    2
@@ -101,6 +102,12 @@ static unsigned long scoreCount = 0;
 static unsigned long scoreFinal = 0;
 
 static unsigned char levelTrack = LEVEL_SLOW;
+
+static unsigned long spriteToShoot = 0;
+static unsigned long selectedSpriteToShoot = 0;
+static unsigned char EnemyShot[NUM_SPRITE] = {0,0,0,0,0};
+static unsigned char countRandom = 0;
+static unsigned char spriteShootInit[NUM_SPRITE] = {0,0,0,0,0};
 typedef enum
 {
     SPACEINVADERS_WELCOME,
@@ -136,7 +143,6 @@ static unsigned char Semaphore = 0;
 
 int main(void)
 {
-    unsigned long sprite_to_shoot;
     unsigned char i;
 	TExaS_Init(SSI0_Real_Nokia5110_Scope); // set system clock to 80 MHz
     Random_Init(1);
@@ -150,6 +156,9 @@ int main(void)
     SpaceInvaders_LEDs_PortB_Init();
     SpaceInvaders_Sound_Init();
     
+    spriteToShoot = Random32()%NUM_SPRITE;
+    (void)SpaceInvaders_Fifo_Put(spriteToShoot);
+
     Nokia5110_Clear();
 
     EnableInterrupts();
@@ -214,7 +223,8 @@ int main(void)
             SpaceInvaders_PlayerShip_Init();
             SpaceInvaders_Bunker_Init();
             SpaceInvaders_ShipMissile_Init();
-            SpaceInvaders_SpriteLaser_Init();
+            // SpaceInvaders_SpriteLaser_Init();
+            SpaceInvaders_Fifo_Init();
             shootFlag = 0;
             scoreCount = 0;
             countSemaphore = 0;
@@ -237,6 +247,13 @@ int main(void)
             {
                 gameState = SPACEINVADERS_GAMEOVER;
             }
+            else if (SpaceInvaders_SpriteLaser_PlayerShip_Hit() == 1)
+            {
+                SpaceInvaders_PlayerShip_SetLife(0);
+                SpaceInvaders_PlayerShip_Draw();
+                Delay100ms(3);
+                gameState = SPACEINVADERS_GAMEOVER;
+            }
             else
             {
                 Nokia5110_ClearBuffer();
@@ -244,8 +261,6 @@ int main(void)
                 if (countSemaphore == levelTrack)
                 {
                     SpaceInvaders_Sprite_Move();
-                    sprite_to_shoot = Random32()%NUM_SPRITE;
-                    
                     countSemaphore = 0;
                 }
                 if (shootFlag == 1)
@@ -256,7 +271,6 @@ int main(void)
                     {
                         shootFlag = 0;
                     }
-                    
                 }
                 if (SpaceInvaders_ShipMissile_Sprites_Hit() == 0)
                 {
@@ -267,11 +281,41 @@ int main(void)
                     SpaceInvaders_Sprite_DrawDead();
                     scoreCount++;
                 }
-
-                SpaceInvaders_SpriteLaser_Move(sprite_to_shoot);
-                SpaceInvaders_SpriteLaser_Draw(sprite_to_shoot);
-                SpaceInvaders_Bunker_Draw(SpaceInvaders_SpriteLaser_Bunker_Hit());
+                if (countRandom == 20 && SpaceInvaders_Fifo_Get(&selectedSpriteToShoot)==1)
+                {
+                    if (EnemyShot[spriteToShoot] != 1)
+                    {
+                        EnemyShot[spriteToShoot] = 1;
+                    }
+                    countRandom = 0;
+                }
+                
+                for (i=0;i<NUM_SPRITE;i++)
+                {
+                    if (EnemyShot[i] == 1)
+                    {
+                        if (spriteShootInit[i] == 0)
+                        {
+                            SpaceInvaders_SpriteLaser_Init(i);
+                            spriteShootInit[i] = 1;
+                        }
+                        SpaceInvaders_SpriteLaser_Move(i);
+                        SpaceInvaders_SpriteLaser_Draw(i);
+                        if (SpaceInvaders_SpriteLaser_GetY(i) == NOKIA_HEIGHT)
+                        {
+                            EnemyShot[i] = 0;
+                            spriteShootInit[i] = 0;
+                        }
+                    }
+                }
+                if (SpaceInvaders_SpriteLaser_Bunker_Hit() != BUNKER_DEAD)
+                {
+                    SpaceInvaders_Bunker_Draw(SpaceInvaders_SpriteLaser_Bunker_Hit());
+                }
+                
+                
                 SpaceInvaders_PlayerShip_Draw();
+                
                 
                 ADCValue = ADC0_In();
                 Semaphore = 0;
@@ -364,6 +408,9 @@ void SysTick_Handler(void)
             //SpaceInvaders_Sound_Shoot();
         }
         countSemaphore++;
+        countRandom++;
+        spriteToShoot = Random32()%NUM_SPRITE;
+        (void)SpaceInvaders_Fifo_Put(spriteToShoot);
         /* Trigger semaphore */
         Semaphore = 1;
     }
