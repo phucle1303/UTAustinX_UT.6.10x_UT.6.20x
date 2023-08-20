@@ -112,6 +112,16 @@ unsigned char SpaceInvaders_ShipMissile_GetX(void);
 unsigned char SpaceInvaders_ShipMissile_GetY(void);
 unsigned char SpaceInvaders_ShipMissile_Sprites_Hit(void);
 
+void SpaceInvaders_ShipMissileSpecial_Init(void);
+void SpaceInvaders_ShipMissileSpecial_SetPosMissile(unsigned char playerShipX, unsigned char playerShipY);
+void SpaceInvaders_ShipMissileSpecial_Move(void);
+void SpaceInvaders_ShipMissileSpecial_1_Draw(void);
+void SpaceInvaders_ShipMissileSpecial_2_Draw(void);
+unsigned char SpaceInvaders_ShipMissileSpecial_1_GetY(void);
+unsigned char SpaceInvaders_ShipMissileSpecial_2_GetY(void);
+unsigned char SpaceInvaders_ShipMissileSpecial_1_Sprites_Hit(void);
+unsigned char SpaceInvaders_ShipMissileSpecial_2_Sprites_Hit(void);
+
 void SpaceInvaders_SpriteLaser_Init(unsigned char spriteToShoot);
 void SpaceInvaders_SpriteLaser_Move(unsigned char spriteToShoot);
 void SpaceInvaders_SpriteLaser_Draw(unsigned char spriteToShoot);
