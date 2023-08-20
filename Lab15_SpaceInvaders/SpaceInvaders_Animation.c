@@ -276,6 +276,7 @@ void SpaceInvaders_Sprite_Init(void)
     firstLeftSprite =  0;
     moveRightSignal =  1;
     moveLeftSignal =  0;
+    Move_state = RIGHT;
     for (i = 0; i < NUM_SPRITE; i++)
     {
         EnemyDead[i] = 0;
@@ -729,32 +730,51 @@ unsigned char SpaceInvaders_ShipMissileSpecial_2_GetY(void)
     return shipMissileSpecial_2.y;
 }
 
-void SpaceInvaders_SpriteLaser_Init(unsigned char spriteToShoot)
+void SpaceInvaders_SpriteLaser_Init(void)
 {
-    spriteLaser[spriteToShoot].x = Enemy[spriteToShoot].x + (SPRITES_WIDTH/2);
-    spriteLaser[spriteToShoot].y = Enemy[spriteToShoot].y + SPRITE_LASER_HEIGHT;
-    spriteLaser[spriteToShoot].image[0] = Laser0;
-    spriteLaser[spriteToShoot].image[1] = Laser1;
-    spriteLaser[spriteToShoot].hit = 0; 
+    unsigned int i;
+    for (i=0; i<NUM_SPRITE; i++)
+    {
+        spriteLaser[i].x = Enemy[i].x + (SPRITES_WIDTH/2);
+        spriteLaser[i].y = Enemy[i].y + SPRITE_LASER_HEIGHT;
+        spriteLaser[i].image[0] = Laser0;
+        spriteLaser[i].image[1] = Laser1;
+        spriteLaser[i].hit = 0; 
+    }
+}
+
+void SpaceInvaders_SpriteLaser_SetPos(unsigned char spriteToShoot)
+{
+    if (Enemy[spriteToShoot].life == 1)
+    {
+        spriteLaser[spriteToShoot].x = Enemy[spriteToShoot].x + (SPRITES_WIDTH/2);
+        spriteLaser[spriteToShoot].y = Enemy[spriteToShoot].y + SPRITE_LASER_HEIGHT;
+    }
 }
 
 void SpaceInvaders_SpriteLaser_Move(unsigned char spriteToShoot)
 {
-    spriteLaser[spriteToShoot].y++;
+    if (Enemy[spriteToShoot].life == 1)
+    {
+        spriteLaser[spriteToShoot].y++;
+    }
 }
 
 void SpaceInvaders_SpriteLaser_Draw(unsigned char spriteToShoot)
 {
-    if (spriteLaser[spriteToShoot].hit == 0)
+    if (Enemy[spriteToShoot].life == 1)
     {
-        Nokia5110_PrintBMP(spriteLaser[spriteToShoot].x, spriteLaser[spriteToShoot].y, spriteLaser[spriteToShoot].image[0], 0);
-    }
-    else
-    {
-        Nokia5110_PrintBMP(spriteLaser[spriteToShoot].x, spriteLaser[spriteToShoot].y, spriteLaser[spriteToShoot].image[1], 0);
-    }
+        if (spriteLaser[spriteToShoot].hit == 0)
+        {
+            Nokia5110_PrintBMP(spriteLaser[spriteToShoot].x, spriteLaser[spriteToShoot].y, spriteLaser[spriteToShoot].image[0], 0);
+        }
+        else
+        {
+            Nokia5110_PrintBMP(spriteLaser[spriteToShoot].x, spriteLaser[spriteToShoot].y, spriteLaser[spriteToShoot].image[1], 0);
+        }
 
-    Nokia5110_DisplayBuffer();
+        Nokia5110_DisplayBuffer();
+    }
 }
 
 unsigned char SpaceInvaders_SpriteLaser_GetY(unsigned char spriteToShoot)

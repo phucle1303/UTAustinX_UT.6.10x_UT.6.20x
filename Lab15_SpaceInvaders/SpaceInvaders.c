@@ -113,6 +113,8 @@ static unsigned long selectedSpriteToShoot = 0;
 static unsigned char EnemyShot[NUM_SPRITE] = {0,0,0,0,0};
 static unsigned char countRandom = 0;
 static unsigned char spriteShootInit[NUM_SPRITE] = {0,0,0,0,0};
+
+static unsigned char soundShootFlag = 0;
 typedef enum
 {
     SPACEINVADERS_WELCOME,
@@ -232,11 +234,7 @@ int main(void)
             SpaceInvaders_Bunker_Init();
             SpaceInvaders_ShipMissile_Init();
             SpaceInvaders_ShipMissileSpecial_Init();
-            for (j=0; j<NUM_SPRITE; j++)
-            {
-                SpaceInvaders_SpriteLaser_Init(j);
-            }
-            // SpaceInvaders_SpriteLaser_Init();
+            SpaceInvaders_SpriteLaser_Init();
             SpaceInvaders_Fifo_Init();
             shootFlag = 0;
             shootSpecialFlag = 1;
@@ -251,7 +249,7 @@ int main(void)
             // SpaceInvaders_Sprite_Move();
             SpaceInvaders_Sprite_DrawAlive();
             SpaceInvaders_Bunker_Draw(BUNKER_UNDAMAGED);
-            Delay100ms(1);
+            Delay100ms(2);
             gameState = SPACEINVADERS_INGAME;
             Nokia5110_ClearBuffer();
             Nokia5110_DisplayBuffer(); // draw buffer
@@ -267,13 +265,20 @@ int main(void)
             {
                 Nokia5110_ClearBuffer();
                 Nokia5110_DisplayBuffer(); // draw buffer
-                if (countSemaphore == levelTrack)
+                if (countSemaphore >= levelTrack)
                 {
                     SpaceInvaders_Sprite_Move();
                     countSemaphore = 0;
                 }
                 if (shootFlag == 1)
                 {
+                    if (soundShootFlag == 1)
+                    {
+                        SpaceInvaders_Sound_Shoot();
+                        soundShootFlag = 0;
+                        Delay100ms(1);
+                    }
+                    
                     SpaceInvaders_ShipMissile_Move();
                     SpaceInvaders_ShipMissile_Draw();
                     if (SpaceInvaders_ShipMissile_Sprites_Hit() == 1)
@@ -333,7 +338,7 @@ int main(void)
                     {
                         if (spriteShootInit[i] == 0)
                         {
-                            SpaceInvaders_SpriteLaser_Init(i);
+                            SpaceInvaders_SpriteLaser_SetPos(i);
                             spriteShootInit[i] = 1;
                         }
                         SpaceInvaders_SpriteLaser_Move(i);
@@ -448,7 +453,8 @@ void SysTick_Handler(void)
             SpaceInvaders_ShipMissile_SetPosMissile(SpaceInvaders_PlayerShip_GetX(), SpaceInvaders_PlayerShip_GetY());
             shootFlag = 1;
             /* play shoot sound */
-            //SpaceInvaders_Sound_Shoot();
+            // SpaceInvaders_Sound_Shoot();
+            soundShootFlag = 1;
         }
         else if (shootSpecialFlag == 0 && SpaceInvaders_GetSwitchState_PE1() == SWITCH_PRESSED)
         {

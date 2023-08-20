@@ -122,7 +122,8 @@ unsigned char SpaceInvaders_ShipMissileSpecial_2_GetY(void);
 unsigned char SpaceInvaders_ShipMissileSpecial_1_Sprites_Hit(void);
 unsigned char SpaceInvaders_ShipMissileSpecial_2_Sprites_Hit(void);
 
-void SpaceInvaders_SpriteLaser_Init(unsigned char spriteToShoot);
+void SpaceInvaders_SpriteLaser_Init(void);
+void SpaceInvaders_SpriteLaser_SetPos(unsigned char spriteToShoot);
 void SpaceInvaders_SpriteLaser_Move(unsigned char spriteToShoot);
 void SpaceInvaders_SpriteLaser_Draw(unsigned char spriteToShoot);
 unsigned char SpaceInvaders_SpriteLaser_GetY(unsigned char spriteToShoot);
