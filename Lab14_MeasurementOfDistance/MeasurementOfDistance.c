@@ -49,8 +49,12 @@ unsigned long Flag;       // 1 means valid Distance, 0 means Distance is empty
 // Overflow and dropout should be considered 
 // Input: sample  12-bit ADC sample
 // Output: 32-bit distance (resolution 0.001cm)
+static unsigned long map(unsigned long x, unsigned long in_min, unsigned long in_max, unsigned long out_min, unsigned long out_max) 
+{
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 unsigned long Convert(unsigned long sample){
-  return 0;  // replace this line with real code
+  return map(sample, 0, 4095, 0, 2000);  // replace this line with real code
 }
 
 // Initialize SysTick interrupts to trigger at 40 Hz, 25 ms
@@ -73,7 +77,12 @@ void SysTick_Init(unsigned long period)
 }
 // executes every 25 ms, collects a sample, converts and stores in mailbox
 void SysTick_Handler(void){ 
-
+  GPIO_PORTF_DIR_R ^= 0x02;
+	GPIO_PORTF_DIR_R ^= 0x02;
+	ADCdata = ADC0_In();
+	Distance = Convert(ADCdata);
+	Flag = 1;
+	GPIO_PORTF_DIR_R ^= 0x02;
 }
 
 //-----------------------UART_ConvertDistance-----------------------
@@ -145,14 +154,20 @@ int main(void){
 // initialize ADC0, channel 1, sequencer 3
 	ADC0_Init();
 // initialize Nokia5110 LCD (optional)
+Nokia5110_Init();
 // initialize SysTick for 40 Hz interrupts
 // initialize profiling on PF1 (optional)
+SysTick_Init(2000000);
                                     //    wait for clock to stabilize
 
   EnableInterrupts();
 // print a welcome message  (optional)
   while(1){ 
 // read mailbox
+  Flag = 0;
+		while (Flag==1);
+		UART_ConvertDistance(Distance);
 // output to Nokia5110 LCD (optional)
+Nokia5110_OutString(String);
   }
 }

@@ -15,16 +15,18 @@ void SpaceInvaders_Timer2_Init(unsigned long period)
     TIMER2_IMR_R = 0x00000001;   // 7) arm timeout
     NVIC_PRI5_R = (NVIC_PRI5_R & 0x00FFFFFF) | 0x80000000;
     // 8) priority 4
-    NVIC_EN0_R = 1 << 23;      // 9) enable IRQ 23 in NVIC
-    TIMER2_CTL_R = 0x00000001; // 10) enable timer2A
+    // NVIC_EN0_R = 1 << 23;      // 9) enable IRQ 23 in NVIC
+    // TIMER2_CTL_R = 0x00000001; // 10) enable timer2A
 }
 
 
 void SpaceInvaders_Timer2A_Stop(void)
 {
+    NVIC_DIS0_R = 1 << 23; 
     TIMER2_CTL_R &= ~0x00000001; // disable
 }
 void SpaceInvaders_Timer2A_Start(void)
 {
+    NVIC_EN0_R = 1 << 23; 
     TIMER2_CTL_R |= 0x00000001; // enable
 }

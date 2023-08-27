@@ -1,12 +1,12 @@
 // Switches module for Space Invaders
-// LED on PB4 - Fire
-// LED on PB5 - Cool down ready
+// LED on PE4 - Fire
+// LED on PE5 - Cool down ready
 
 #ifndef _SPACEINVADERS_LEDS_H_
 #define _SPACEINVADERS_LEDS_H_
 
 /* LEDs init */
-void SpaceInvaders_LEDs_PortB_Init(void);
+void SpaceInvaders_LEDs_PortE_Init(void);
 
 /* Turn on LED PB4 */
 void SpaceInvaders_LED_Fire_On(void);

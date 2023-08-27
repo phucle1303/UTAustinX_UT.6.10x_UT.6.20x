@@ -6,7 +6,8 @@
         "spaceinvaders_systick.h": "c",
         "spaceinvaders_timer2a.h": "c",
         "random.h": "c",
-        "spaceinvaders_fifo.h": "c"
+        "spaceinvaders_fifo.h": "c",
+        "pll.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

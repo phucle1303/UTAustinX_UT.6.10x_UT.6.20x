@@ -33,5 +33,5 @@ void DAC_Init(void)
 // Output: none
 void DAC_Out(unsigned long data)
 {
-  GPIO_PORTB_DATA_R = data;
+  GPIO_PORTB_DATA_R += data;
 }

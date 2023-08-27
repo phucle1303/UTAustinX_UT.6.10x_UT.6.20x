@@ -556,8 +556,8 @@ void SpaceInvaders_ShipMissile_Init(void)
 {
     shipMissile.x = 0;
     shipMissile.y = 0;
-    shipMissile.image[0] = Missile0;
-    shipMissile.image[1] = Missile2;
+    shipMissile.image[0] = Laser0;
+    shipMissile.image[1] = Laser1;
     shipMissile.hit = 0;
 }
 
@@ -565,6 +565,7 @@ void SpaceInvaders_ShipMissile_SetPosMissile(unsigned char playerShipX, unsigned
 {
     shipMissile.x = playerShipX + (PLAYERSHIP_WIDTH/2);
     shipMissile.y = playerShipY - PLAYERSHIP_HEIGHT;
+    shipMissile.hit=0;
 }
 
 void SpaceInvaders_ShipMissile_Move(void)
@@ -622,14 +623,14 @@ void SpaceInvaders_ShipMissileSpecial_Init(void)
 {
     shipMissileSpecial_1.x = 0;
     shipMissileSpecial_1.y = 0;
-    shipMissileSpecial_1.image[0] = Missile0;
-    shipMissileSpecial_1.image[1] = Missile2;
+    shipMissileSpecial_1.image[0] = Laser0;
+    shipMissileSpecial_1.image[1] = Laser1;
     shipMissileSpecial_1.hit = 0;
 
     shipMissileSpecial_2.x = 0;
     shipMissileSpecial_2.y = 0;
-    shipMissileSpecial_2.image[0] = Missile0;
-    shipMissileSpecial_2.image[1] = Missile2;
+    shipMissileSpecial_2.image[0] = Laser0;
+    shipMissileSpecial_2.image[1] = Laser1;
     shipMissileSpecial_2.hit = 0;
 }
 
