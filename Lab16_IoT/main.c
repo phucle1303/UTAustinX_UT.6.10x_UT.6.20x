@@ -94,9 +94,9 @@ Port A, SSI0 (PA2, PA3, PA5, PA6, PA7) sends data to Nokia5110 LCD
 #include "LED.h"
 #include "Nokia5110.h"
 #include <string.h>
-#define SSID_NAME  "valvanoAP" /* Access point name to connect to */
+#define SSID_NAME  "TMB" /* Access point name to connect to */
 #define SEC_TYPE   SL_SEC_TYPE_WPA
-#define PASSKEY    "12345678"  /* Password in case of secure AP */ 
+#define PASSKEY    "Bhoye669"  /* Password in case of secure AP */ 
 
 #define BAUD_RATE   115200
 void UART_Init(void){
@@ -204,8 +204,8 @@ void Crash(uint32_t time){
  */
 // 1) change Austin Texas to your city
 // 2) you can change metric to imperial if you want temperature in F
-#define REQUEST "GET /data/2.5/weather?q=Austin%20Texas&APPID=1234567890abcdef1234567890abcdef&units=metric HTTP/1.1\r\nUser-Agent: Keil\r\nHost:api.openweathermap.org\r\nAccept: */*\r\n\r\n"
-// 1) go to http://openweathermap.org/appid 
+#define REQUEST "GET /query?city=Paris%20France&id=Phuc%20Le&greet=Finally%20I%20finished%20Lab%2016%20and%20UTAustinX%20UT620x%20Course.&edxcode=2715 HTTP/1.1\r\nUser-Agent: Keil\r\nHost: embsysmooc.appspot.com\r\n\r\n"
+// 1) go to http://openweathermap.org/appid (this changes to embsysmooc.appspot.com)
 // 2) Register on the Sign up page
 // 3) get an API key (APPID) replace the 1234567890abcdef1234567890abcdef with your APPID
 int main(void){int32_t retVal;  SlSecParams_t secParams;
@@ -213,7 +213,7 @@ int main(void){int32_t retVal;  SlSecParams_t secParams;
   initClk();        // PLL 50 MHz
   UART_Init();      // Send data to PC, 115200 bps
   LED_Init();       // initialize LaunchPad I/O 
-  UARTprintf("Weather App\n");
+  UARTprintf("Lab 16 IoT\n");
   retVal = configureSimpleLinkToDefaultState(pConfig); // set policies
   if(retVal < 0)Crash(4000000);
   retVal = sl_Start(0, pConfig, 0);
@@ -227,7 +227,7 @@ int main(void){int32_t retVal;  SlSecParams_t secParams;
   }
   UARTprintf("Connected\n");
   while(1){
-    strcpy(HostName,"openweathermap.org");
+    strcpy(HostName,"embsysmooc.appspot.com");
     retVal = sl_NetAppDnsGetHostByName(HostName,
              strlen(HostName),&DestinationIP, SL_AF_INET);
     if(retVal == 0){
