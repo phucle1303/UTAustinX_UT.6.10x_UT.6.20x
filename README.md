@@ -6,4 +6,5 @@ Lab 10 Traffic Light using FSM: https://youtu.be/aT73lu_d_PY \
 The FSM graph and table are in Lab10_TrafficLight/FSM_TrafficLight.xlsx
 
 Embedded Systems - Shape The World: Multi-threaded Interfacing\
-https://learning.edx.org/course/course-v1:UTAustinX+UT.6.20x+T2017/home
+https://learning.edx.org/course/course-v1:UTAustinX+UT.6.20x+T2017/home \
+Lab 15 Space Invader: https://youtu.be/coEg4f1UDh0?si=p8zu_KGOwmWIbA65
